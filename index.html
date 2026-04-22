@@ -280,12 +280,14 @@
   <div class="brand">Stroke Explorer</div>
   <div id="tab-bar">
     <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="gene">Gene Explorer</button>
     <button class="tab-btn" data-tab="celldeath">Cell Death</button>
     <button class="tab-btn" data-tab="temporal">Temporal</button>
     <button class="tab-btn" data-tab="forest">Meta-Analysis</button>
     <button class="tab-btn" data-tab="astrocyte">Astrocytes</button>
     <button class="tab-btn" data-tab="microglia">Microglia</button>
-    <button class="tab-btn" data-tab="gene">Gene Explorer</button>
+    <button class="tab-btn" data-tab="ligrec">Cell–Cell Talk</button>
+    <button class="tab-btn" data-tab="drugs">Drug Targets</button>
     <button class="tab-btn" data-tab="umap">UMAP</button>
   </div>
 </nav>
@@ -391,6 +393,18 @@
         <label class="check-item"><input type="checkbox" id="fp-neuronal" checked> <span style="color:#FF9400;font-weight:600">●</span> Neuronal</label>
         <label class="check-item"><input type="checkbox" id="fp-immune" checked> <span style="color:#888;font-weight:600">●</span> Immune</label>
       </div>
+
+      <label style="margin-top:10px">X-axis</label>
+      <div class="radio-group">
+        <label class="radio-item"><input type="radio" name="fp-xaxis" value="panel" checked> Per-panel (free)</label>
+        <label class="radio-item"><input type="radio" name="fp-xaxis" value="row"> Per row (time bin)</label>
+        <label class="radio-item"><input type="radio" name="fp-xaxis" value="shared"> Shared</label>
+      </div>
+
+      <label style="margin-top:10px">Datasets by time bin</label>
+      <div id="fp-datasets-acute"    class="check-group"></div>
+      <div id="fp-datasets-subacute" class="check-group" style="margin-top:4px"></div>
+      <div id="fp-datasets-chronic"  class="check-group" style="margin-top:4px"></div>
     </div>
 
     <!-- ASTROCYTES -->
@@ -403,7 +417,6 @@
         <label class="check-item"><input type="checkbox" class="as-sig" value="A1_markers" checked> <span style="color:#E74C3C;font-weight:600">●</span> A1 (neurotoxic)</label>
         <label class="check-item"><input type="checkbox" class="as-sig" value="A2_markers" checked> <span style="color:#2ECC71;font-weight:600">●</span> A2 (neuroprotective)</label>
         <label class="check-item"><input type="checkbox" class="as-sig" value="Pan_reactive" checked> <span style="color:#F39C12;font-weight:600">●</span> Pan-reactive</label>
-        <label class="check-item"><input type="checkbox" class="as-sig" value="Antioxidant" checked> <span style="color:#16A085;font-weight:600">●</span> Antioxidant (Nrf2)</label>
       </div>
     </div>
 
@@ -448,6 +461,52 @@
       <p style="font-size:0.72rem;color:var(--muted);margin-top:6px">Search any gene in the box above the chart. Columns = dataset · day post-stroke (chronological).</p>
     </div>
 
+    <!-- CELL-CELL TALK -->
+    <div id="sf-ligrec" class="sidebar-section" style="display:none">
+      <label>Time bin</label>
+      <select id="lr-bin">
+        <option value="__all__">All</option>
+        <option value="Acute">Acute</option>
+        <option value="Subacute">Subacute</option>
+        <option value="Chronic">Chronic</option>
+      </select>
+      <label style="margin-top:6px">Pathway family</label>
+      <select id="lr-pathway">
+        <option value="__all__">All pathways</option>
+      </select>
+      <label style="margin-top:6px">Metric</label>
+      <div class="radio-group">
+        <label class="radio-item"><input type="radio" name="lr-metric" value="delta" checked> Δ (stroke − ctrl)</label>
+        <label class="radio-item"><input type="radio" name="lr-metric" value="abs_stroke"> Absolute stroke</label>
+      </div>
+      <label style="margin-top:6px">Top N pairs (right panel)</label>
+      <select id="lr-topn">
+        <option value="10">10</option>
+        <option value="15" selected>15</option>
+        <option value="25">25</option>
+      </select>
+    </div>
+
+    <!-- DRUG TARGETS -->
+    <div id="sf-drugs" class="sidebar-section" style="display:none">
+      <label>Cell type</label>
+      <select id="dg-celltype">
+        <option value="__all__">All cell types</option>
+      </select>
+      <label style="margin-top:6px">Status</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" class="dg-status" value="Approved" checked> Approved</label>
+        <label class="check-item"><input type="checkbox" class="dg-status" value="Phase 3" checked> Phase 3</label>
+        <label class="check-item"><input type="checkbox" class="dg-status" value="Phase 2" checked> Phase 2</label>
+        <label class="check-item"><input type="checkbox" class="dg-status" value="Phase 1" checked> Phase 1</label>
+        <label class="check-item"><input type="checkbox" class="dg-status" value="Preclinical" checked> Preclinical</label>
+        <label class="check-item"><input type="checkbox" class="dg-status" value="Biomarker" checked> Biomarker-only</label>
+      </div>
+      <label style="margin-top:6px">Min druggability</label>
+      <input type="range" id="dg-drugmin" min="0" max="1" step="0.05" value="0">
+      <div style="font-size:0.72rem;color:var(--muted);text-align:right" id="dg-drugmin-val">0.00</div>
+    </div>
+
     <!-- UMAP -->
     <div id="sf-umap" class="sidebar-section" style="display:none">
       <label>Color by pathway module</label>
@@ -461,6 +520,10 @@
       </select>
       <label style="margin-top:6px">Dataset</label>
       <select id="um-dataset"></select>
+      <label style="margin-top:6px">Timepoint</label>
+      <select id="um-timepoint">
+        <option value="__all__">All timepoints (mean)</option>
+      </select>
     </div>
 
     <div class="sidebar-spacer"></div>
@@ -629,7 +692,7 @@
     <!-- ================= TAB 7 · GENE EXPLORER ================= -->
     <div id="tab-gene" class="tab-panel">
       <div class="page-title">Gene explorer</div>
-      <div class="page-sub">Browse expression of any of the 251 curated effector genes across all cell types and conditions within a chosen dataset.</div>
+      <div class="page-sub">Search any gene symbol. Expression is pre-computed for ~250 curated cell-death / glial effectors across all datasets × cell types × timepoints; other symbols return external look-ups (NCBI / Ensembl / GTEx).</div>
       <div class="chart-panel">
         <div class="gene-search-row">
           <input type="text" id="ge-gene-input" list="gene-datalist" placeholder="Search gene… (e.g. Casp3)" value="Casp3" autocomplete="off">
@@ -651,6 +714,42 @@
       </div>
       <div class="chart-panel">
         <div id="chart-umap" style="width:100%;min-height:520px"></div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 9 · CELL-CELL TALK ================= -->
+    <div id="tab-ligrec" class="tab-panel">
+      <div class="page-title">Cell–Cell Talk (ligand–receptor)</div>
+      <div class="page-sub">
+        Pooled ligand–receptor interactions across stroke scRNA-seq datasets (CellChat / CellPhoneDB annotated).
+        Left: source-cell × target-cell heatmap of total signalling strength. Right: top up- and down-regulated L–R pairs after stroke.
+      </div>
+      <div class="chart-panel">
+        <div class="chart-subtitle" id="lr-subtitle">All pathways, all time bins — stroke − control Δ signalling strength.</div>
+        <div id="chart-lr-heatmap" style="width:100%;min-height:440px"></div>
+        <div id="chart-lr-top" style="width:100%;min-height:460px;margin-top:14px"></div>
+        <div class="chart-note">
+          Edge weight = mean( ligand · receptor ) across member datasets. Δ is stroke − control.
+          Values are schematic; confirm in the source datasets before quoting. Source annotations: CellChat v2, CellPhoneDB v5.
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 10 · DRUG TARGETS ================= -->
+    <div id="tab-drugs" class="tab-panel">
+      <div class="page-title">Drug targets by cell type</div>
+      <div class="page-sub">
+        Stroke-upregulated, cell-type-restricted targets with approved or clinical-stage pharmacology.
+        Annotations pulled from DGIdb, ChEMBL, OpenTargets, and stroke clinical-trial literature.
+      </div>
+      <div class="chart-panel">
+        <div class="chart-subtitle" id="dg-subtitle">Cell type · target grid · colour = Δ log2FC after stroke · size = druggability score.</div>
+        <div id="chart-dg-dot" style="width:100%;min-height:520px"></div>
+        <div id="dg-table" style="margin-top:14px;font-size:0.82rem"></div>
+        <div class="chart-note">
+          Druggability combines approved-drug availability, ligand-binding pocket quality, and published preclinical traction.
+          Status tags use FDA/EMA approvals where applicable.
+        </div>
       </div>
     </div>
 
@@ -923,6 +1022,8 @@ async function loadAllData() {
     { key: 'coreScores', path: 'data/core_gene_scores.json',      msg: 'Loading core module scores…' },
     { key: 'signatures', path: 'data/cell_death_signatures.json', msg: 'Loading pathway gene signatures…' },
     { key: 'glialFull',  path: 'data/glial_full.json',            msg: 'Loading extended glial scores…' },
+    { key: 'ligRec',     path: 'data/ligand_receptor.json',       msg: 'Loading ligand-receptor pairs…' },
+    { key: 'drugs',      path: 'data/drug_targets.json',          msg: 'Loading drug targets…' },
   ];
   const large = { key: 'gene_expr', path: 'data/gene_expr.json', msg: 'Loading gene expression matrix (~7 MB)…' };
   TOTAL_FILES = small.length + 1;
@@ -1040,6 +1141,8 @@ function renderTab(tab) {
   if (tab === 'microglia') renderMicroglia();
   if (tab === 'gene')      renderGene();
   if (tab === 'umap')      renderUmap();
+  if (tab === 'ligrec')    renderLigRec();
+  if (tab === 'drugs')     renderDrugs();
 }
 
 /* ── formatting helpers ─────────────────────────────────── */
@@ -1105,13 +1208,26 @@ function openDatasetModal(id) {
   document.getElementById('modal-title').textContent   = d.id + ' · ' + d.title;
   document.getElementById('modal-journal').textContent = `${d.journal} (${d.year}) · Journal tier ${d.journal_tier}`;
   document.getElementById('modal-summary').textContent = DATASET_SUMMARIES[d.id] || d.notes;
-  document.getElementById('modal-facts').innerHTML = `
-    <div><span>Species</span><strong>${d.species}</strong></div>
-    <div><span>Assay</span><strong>${d.assay}</strong></div>
-    <div><span>Region</span><strong>${d.region}</strong></div>
-    <div><span>Cells</span><strong>${fmtNum(d.n_cells)}</strong></div>
-    <div><span>Time bin</span><strong>${d.time_bin}</strong></div>
-    <div><span>Meta-weight</span><strong>${fmtPct(d.weight)}</strong></div>`;
+  // A richer set of key facts (falls back gracefully if a field is absent)
+  const fact = (label, val) => val ? `<div><span>${label}</span><strong>${val}</strong></div>` : '';
+  document.getElementById('modal-facts').innerHTML = [
+    fact('Species',       d.species),
+    fact('Strain',        d.strain),
+    fact('Sex',           d.sex),
+    fact('Age',           d.age),
+    fact('Stroke model',  d.stroke_model),
+    fact('Region',        d.region),
+    fact('Assay',         d.assay),
+    fact('Platform',      d.platform),
+    fact('Cells',         d.n_cells ? fmtNum(d.n_cells) : null),
+    fact('Samples',       d.n_samples ? fmtNum(d.n_samples) : null),
+    fact('Time bin',      d.time_bin),
+    fact('Meta-weight',   d.weight != null ? fmtPct(d.weight) : null),
+    fact('Journal',       d.journal ? `${d.journal} (${d.year})` : null),
+    fact('Authors',       d.authors),
+    fact('PMID',          d.pmid ? `<a href="https://pubmed.ncbi.nlm.nih.gov/${d.pmid}/" target="_blank" rel="noopener">${d.pmid}</a>` : null),
+    fact('DOI',           d.doi  ? `<a href="https://doi.org/${d.doi}" target="_blank" rel="noopener">${d.doi}</a>` : null),
+  ].join('');
   document.getElementById('modal-timepoints').innerHTML = d.timepoints.map(t=>`<span class="chip">${t}</span>`).join('');
   document.getElementById('modal-celltypes').innerHTML = d.cell_types.map(ct => {
     const col = CT_DOT_COLORS[ct] || '#999';
@@ -1119,7 +1235,18 @@ function openDatasetModal(id) {
   }).join('');
   document.getElementById('modal-notes').textContent = d.notes;
   document.getElementById('modal-geo-link').href = `https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${d.id}`;
-  document.getElementById('modal-pubmed-link').href = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(d.id + ' stroke scRNA-seq')}`;
+  // Direct PubMed link: use PMID if known, otherwise DOI, otherwise a tight GSE-ID search
+  const pubmedEl = document.getElementById('modal-pubmed-link');
+  if (d.pmid) {
+    pubmedEl.href = `https://pubmed.ncbi.nlm.nih.gov/${d.pmid}/`;
+    pubmedEl.textContent = 'Open paper on PubMed';
+  } else if (d.doi) {
+    pubmedEl.href = `https://doi.org/${d.doi}`;
+    pubmedEl.textContent = 'Open paper (DOI)';
+  } else {
+    pubmedEl.href = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(d.id)}`;
+    pubmedEl.textContent = 'Search PubMed';
+  }
   document.getElementById('modal-backdrop').classList.add('open');
 }
 function closeDatasetModal() {
@@ -1468,74 +1595,121 @@ function metaCellType(items) {
   return { mean, lo, hi, n: items.length };
 }
 
+/* ---- Build the per-time-bin dataset chooser once on first render ---- */
+function initForestDatasets() {
+  const acuteBox = document.getElementById('fp-datasets-acute');
+  if (!acuteBox || acuteBox.dataset.ready) return;
+  const subBox   = document.getElementById('fp-datasets-subacute');
+  const chronBox = document.getElementById('fp-datasets-chronic');
+
+  // Group datasets by which time bin(s) their timepoints actually fall into.
+  const bins = { Acute: new Set(), Subacute: new Set(), Chronic: new Set() };
+  expandedStrokeCols().forEach(col => {
+    const tb = timeBinOf(col.days);
+    if (bins[tb]) bins[tb].add(col.dataset);
+  });
+  const boxes = { Acute: acuteBox, Subacute: subBox, Chronic: chronBox };
+  for (const tb of ['Acute','Subacute','Chronic']) {
+    const ids = [...bins[tb]].sort();
+    if (!ids.length) {
+      boxes[tb].innerHTML = `<div style="font-size:0.72rem;color:var(--muted);padding-left:4px">
+        <span style="color:${TIME_BIN_COLOR[tb]};font-weight:600">${tb}</span> — no datasets</div>`;
+      continue;
+    }
+    boxes[tb].innerHTML =
+      `<div style="font-size:0.72rem;color:${TIME_BIN_COLOR[tb]};font-weight:600;padding-left:4px">${tb}</div>` +
+      ids.map(id =>
+        `<label class="check-item"><input type="checkbox" class="fp-ds fp-ds-${tb.toLowerCase()}" value="${id}" data-bin="${tb}" checked> ${id}</label>`
+      ).join('');
+  }
+  acuteBox.dataset.ready = '1';
+  // Hook change events (one-shot)
+  document.querySelectorAll('.fp-ds').forEach(cb => cb.addEventListener('change', renderForest));
+  document.querySelectorAll('input[name="fp-xaxis"]').forEach(r => r.addEventListener('change', renderForest));
+}
+
 function renderForest() {
+  initForestDatasets();
+
   const showV = document.getElementById('fp-vascular').checked;
   const showG = document.getElementById('fp-glial').checked;
   const showN = document.getElementById('fp-neuronal').checked;
   const showI = document.getElementById('fp-immune').checked;
   const visible = { vascular: showV, glial: showG, neuronal: showN, immune: showI };
 
+  // Which datasets are active in each bin?
+  const activeDs = { Acute: new Set(), Subacute: new Set(), Chronic: new Set() };
+  document.querySelectorAll('.fp-ds:checked').forEach(cb => activeDs[cb.dataset.bin].add(cb.value));
+
+  const xaxisMode = (document.querySelector('input[name="fp-xaxis"]:checked') || {}).value || 'panel';
+
   const pathways = ['Apoptosis','Ferroptosis','Necroptosis'];
   const timeBins = ['Acute','Subacute','Chronic'];
 
-  // Build the full (dataset × stroke-condition) list, then compute Δ per
-  // (pathway × time_bin × cell_type × dataset·condition) using current
-  // MODULES. This makes the forest plot respond to module edits too.
-  const cols = expandedStrokeCols();  // already chronological
+  const cols = expandedStrokeCols();
   const datasetWeight = {};
   DATA.datasets.forEach(d => { datasetWeight[d.id] = d.weight || 0.1; });
 
-  // Gather all cell types present in any dataset
   const cellOrder = CT_ORDER.filter(ct =>
     DATA.datasets.some(d => d.cell_types.includes(ct)) && visible[ctGroup(ct)]
   );
 
-  // For each (pathway × time_bin × cell_type), compute the weighted-mean Δ
-  // across every matching (dataset, stroke condition). Cache the structure
-  // to compute absMax in a second pass.
+  // Compute (pathway × time_bin × cell_type) meta, restricted to user-selected datasets.
   function computeMeta(pw, tb, ct) {
     const items = [];
     cols.forEach(col => {
       if (timeBinOf(col.days) !== tb) return;
+      if (!activeDs[tb].has(col.dataset)) return;
       const r = moduleDeltaPerCond(col.dataset, ct, col.condition, MODULES[pw]);
       if (r.delta !== null && !isNaN(r.delta)) {
-        items.push({ delta: r.delta, weight: datasetWeight[col.dataset] || 0.1, dataset: col.dataset, cond: col.condition, days: col.days });
+        items.push({ delta: r.delta, weight: datasetWeight[col.dataset] || 0.1 });
       }
     });
     return metaCellType(items);
   }
 
-  // Determine a shared x-axis extent for comparability
-  let absMax = 0;
-  pathways.forEach(pw => timeBins.forEach(tb => cellOrder.forEach(ct => {
-    const m = computeMeta(pw, tb, ct);
-    if (m) absMax = Math.max(absMax, Math.abs(m.lo), Math.abs(m.hi));
-  })));
-  absMax = Math.max(0.3, absMax * 1.05);
+  // Pre-compute all 3×3 panels → per-cell-type meta, so we can derive
+  // per-panel / per-row / shared x-axis ranges in one pass.
+  const panel = {};   // panel[tb][pw] = array of { cell_type, meta }
+  timeBins.forEach(tb => {
+    panel[tb] = {};
+    pathways.forEach(pw => {
+      panel[tb][pw] = cellOrder.map(ct => ({ cell_type: ct, meta: computeMeta(pw, tb, ct) }));
+    });
+  });
+  const maxExtent = arr => {
+    let m = 0;
+    arr.forEach(p => { if (p.meta) m = Math.max(m, Math.abs(p.meta.lo), Math.abs(p.meta.hi)); });
+    return m;
+  };
+  // Shared extent
+  let sharedMax = 0;
+  timeBins.forEach(tb => pathways.forEach(pw => { sharedMax = Math.max(sharedMax, maxExtent(panel[tb][pw])); }));
+  sharedMax = Math.max(0.3, sharedMax * 1.05);
+  // Per-row extent
+  const rowMax = {};
+  timeBins.forEach(tb => {
+    let m = 0; pathways.forEach(pw => { m = Math.max(m, maxExtent(panel[tb][pw])); });
+    rowMax[tb] = Math.max(0.15, m * 1.05);
+  });
 
   const traces = [], annotations = [];
-  const gap = 0.035;
-  const ncols = pathways.length;   // 3
-  const nrows = timeBins.length;   // 3
+  const gap = 0.045;
+  const ncols = pathways.length;
+  const nrows = timeBins.length;
   const wCell = (1 - gap * (ncols - 1)) / ncols;
   const hCell = (1 - gap * (nrows - 1)) / nrows;
 
   timeBins.forEach((tb, ri) => {
     pathways.forEach((pw, ci) => {
-      const panelIdx = ri * ncols + ci;        // 0..8
+      const panelIdx = ri * ncols + ci;
       const axNum = panelIdx + 1;
       const xref = axNum === 1 ? 'x' : `x${axNum}`;
       const yref = axNum === 1 ? 'y' : `y${axNum}`;
 
-      // One meta-row per cell type
-      const perCT = cellOrder.map(ct => ({ cell_type: ct, meta: computeMeta(pw, tb, ct) }));
-
-      const hasData = perCT.filter(p => p.meta);
-      const noData  = perCT.filter(p => !p.meta);
-
-      // Filled points with CI whiskers (≥ 2 datasets)
-      const solid = hasData.filter(p => p.meta.n >= 2);
-      const sparse = hasData.filter(p => p.meta.n === 1);
+      const perCT  = panel[tb][pw];
+      const solid  = perCT.filter(p => p.meta && p.meta.n >= 2);
+      const sparse = perCT.filter(p => p.meta && p.meta.n === 1);
 
       if (solid.length) traces.push({
         type: 'scatter', mode: 'markers',
@@ -1571,12 +1745,10 @@ function renderForest() {
         showlegend: false, xaxis: xref, yaxis: yref,
       });
 
-      // Domains
       const xDom = [ci * (wCell + gap), ci * (wCell + gap) + wCell];
       const yDomTop = 1 - (ri * (hCell + gap));
       const yDom = [yDomTop - hCell, yDomTop];
 
-      // Column labels (pathways, top)
       if (ri === 0) {
         annotations.push({
           text: `<b>${pw}</b>`, x: (xDom[0] + xDom[1]) / 2, y: 1.02,
@@ -1584,7 +1756,6 @@ function renderForest() {
           font: { size: 13, color: PATHWAY_COLORS[pw] }, xanchor: 'center',
         });
       }
-      // Row labels (time bins, left of leftmost panel)
       if (ci === 0) {
         annotations.push({
           text: `<b style="color:${TIME_BIN_COLOR[tb]}">${tb}</b>`,
@@ -1599,12 +1770,13 @@ function renderForest() {
 
   const layout = {
     annotations,
-    margin: { l: 150, r: 20, t: 60, b: 50 },
+    margin: { l: 150, r: 20, t: 60, b: 60 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
     height: Math.max(700, 110 * nrows + 120),
   };
   for (let ri = 0; ri < nrows; ri++) {
     for (let ci = 0; ci < ncols; ci++) {
+      const tb = timeBins[ri], pw = pathways[ci];
       const panelIdx = ri * ncols + ci;
       const axNum = panelIdx + 1;
       const xi = axNum === 1 ? 'xaxis' : `xaxis${axNum}`;
@@ -1612,12 +1784,23 @@ function renderForest() {
       const xDom = [ci * (wCell + gap), ci * (wCell + gap) + wCell];
       const yDomTop = 1 - (ri * (hCell + gap));
       const yDom = [yDomTop - hCell, yDomTop];
+
+      // Pick the x-axis range per the selected mode
+      let mx;
+      if (xaxisMode === 'shared') mx = sharedMax;
+      else if (xaxisMode === 'row') mx = rowMax[tb];
+      else {
+        mx = maxExtent(panel[tb][pw]);
+        mx = Math.max(0.1, mx * 1.1);
+      }
+
       layout[xi] = {
-        domain: xDom, range: [-absMax, absMax],
+        domain: xDom, range: [-mx, mx],
         zeroline: true, zerolinecolor: '#333', zerolinewidth: 1.2,
         gridcolor: '#eee', tickfont: { size: 9 },
         anchor: `y${axNum}`,
-        showticklabels: ri === nrows - 1,
+        showticklabels: true,
+        nticks: 5,
         title: ri === nrows - 1 ? { text: 'Weighted Δ (stroke − ctrl)', font: { size: 10 } } : undefined,
       };
       layout[yi] = {
@@ -1638,12 +1821,7 @@ function renderForest() {
    Timeline: same data plotted on a day axis.
    ------------------------------------------------------------ */
 function astroSigDelta(dataset, cond, sig) {
-  // Prefer glial.json for the pre-computed signatures; fallback to
-  // Antioxidant computed on-the-fly via moduleDeltaPerCond.
-  if (sig === 'Antioxidant') {
-    const r = moduleDeltaPerCond(dataset, 'Astrocyte', cond, ANTIOX_GENES);
-    return r.delta;
-  }
+  // Use glial.json for the pre-computed signatures (A1/A2/Pan-reactive).
   // glial.json has rows per dataset × signature × cell_type (± timepoint)
   const rows = DATA.glial.filter(r =>
     r.dataset === dataset && r.signature === sig && r.cell_type === 'Astrocyte');
@@ -1934,9 +2112,24 @@ function renderGene() {
   badge.className = `gene-pathway-badge pathway-${firstPw}`;
 
   if (!IDX.knownGenes.has(gene)) {
+    // Honest message: the pre-computed expression matrix is limited, but we
+    // still let the user look the gene up externally without leaving the site.
+    const ncbi  = `https://www.ncbi.nlm.nih.gov/gene/?term=${encodeURIComponent(gene)}`;
+    const gtex  = `https://www.gtexportal.org/home/gene/${encodeURIComponent(gene)}`;
+    const ensbl = `https://www.ensembl.org/Multi/Search/Results?q=${encodeURIComponent(gene)}`;
     document.getElementById('ge-subtitle').innerHTML =
-      `<span style="color:#C0392B">Gene <strong>${gene}</strong> is not in the 251-gene meta-analysis set.</span>`;
-    Plotly.react('chart-gene', [], { height: 300 }, { responsive: true });
+      `<div style="color:#B45309;background:#FFF7ED;border:1px solid #FED7AA;padding:10px 12px;border-radius:6px;line-height:1.55">
+         <b>${gene}</b> is not yet in the curated expression matrix (251 effector genes).
+         The site ships with pre-computed <code>AverageExpression()</code> values for a focused
+         gene panel; a full-transcriptome matrix would require re-running the upstream
+         Seurat pipeline on each dataset without gene filtering.<br>
+         <span style="font-size:0.82rem">External lookup:
+           <a href="${ncbi}"  target="_blank" rel="noopener">NCBI Gene</a> ·
+           <a href="${ensbl}" target="_blank" rel="noopener">Ensembl</a> ·
+           <a href="${gtex}"  target="_blank" rel="noopener">GTEx</a>
+         </span>
+       </div>`;
+    Plotly.react('chart-gene', [], { height: 220, xaxis:{visible:false}, yaxis:{visible:false} }, { responsive: true, displayModeBar: false });
     return;
   }
 
@@ -2037,20 +2230,50 @@ const UMAP_CENTERS = {
   'NK.cell':       [ 2.2, -0.2],
 };
 
+function populateUmapTimepoints() {
+  const umDs = document.getElementById('um-dataset');
+  const umTp = document.getElementById('um-timepoint');
+  const dataset = umDs.value;
+  const conds = strokeConds(dataset);  // all stroke labels for this dataset
+  // Order by day
+  conds.sort((a, b) => (DAYS_OF[dataset]?.[a] || 0) - (DAYS_OF[dataset]?.[b] || 0));
+  const prev = umTp.value;
+  umTp.innerHTML = '<option value="__all__">All timepoints (mean)</option>' +
+    conds.map(c => {
+      const day = DAYS_OF[dataset]?.[c];
+      const label = day != null ? `${c} (D${day})` : c;
+      return `<option value="${c}">${label}</option>`;
+    }).join('');
+  // Keep previous selection if still valid, else reset
+  if ([...umTp.options].some(o => o.value === prev)) umTp.value = prev;
+  else umTp.value = '__all__';
+}
+
 function renderUmap() {
   const umDs = document.getElementById('um-dataset');
   if (!umDs.options.length) {
     umDs.innerHTML = DATA.datasets.map(d => `<option value="${d.id}"${d.id==='GSE174574'?' selected':''}>${d.id}</option>`).join('');
+    populateUmapTimepoints();
   }
   const pw = document.getElementById('um-pathway').value;
   const dataset = umDs.value;
+  const tp = document.getElementById('um-timepoint').value;
   const genes = pw === 'Antioxidant' ? ANTIOX_GENES : MODULES[pw];
 
   const dsMeta = DATA.datasets.find(d => d.id === dataset);
   const cts = (dsMeta?.cell_types || []).filter(ct => UMAP_CENTERS[ct]);
 
+  // Δ per cell type: if a specific timepoint is chosen, compare that day
+  // to pooled controls; otherwise average over all stroke timepoints.
+  function deltaForCt(ct) {
+    if (tp && tp !== '__all__') {
+      return moduleDeltaPerCond(dataset, ct, tp, genes).delta;
+    }
+    return moduleDelta(dataset, ct, genes).delta;
+  }
+
   // compute max abs delta for colour scaling
-  const deltas = cts.map(ct => moduleDelta(dataset, ct, genes).delta).filter(v => v !== null && !isNaN(v));
+  const deltas = cts.map(ct => deltaForCt(ct)).filter(v => v !== null && !isNaN(v));
   const mx = deltas.length ? Math.max(0.2, Math.max(...deltas.map(Math.abs))) : 1;
 
   // generate fake point clouds around each centre
@@ -2058,10 +2281,9 @@ function renderUmap() {
   const nPerCluster = 60;
   for (const ct of cts) {
     const [cx, cy] = UMAP_CENTERS[ct];
-    const d = moduleDelta(dataset, ct, genes);
-    const dval = d.delta ?? 0;
+    const dval = deltaForCt(ct) ?? 0;
     // deterministic pseudo-random offsets so it looks the same on every render
-    let seed = hash(dataset + '|' + ct);
+    let seed = hash(dataset + '|' + ct + '|' + tp);
     for (let i = 0; i < nPerCluster; i++) {
       seed = (seed * 1103515245 + 12345) & 0x7fffffff;
       const u = (seed / 0x7fffffff);
@@ -2076,7 +2298,8 @@ function renderUmap() {
       xs.push(cx + r  * 0.35);
       ys.push(cy + r2 * 0.35);
       cs.push(dval);
-      ts.push(`${ct} · Δ${pw}: ${dval.toFixed(3)}`);
+      const tpTag = (tp && tp !== '__all__') ? ` @ ${tp}` : '';
+      ts.push(`${ct}${tpTag} · Δ${pw}: ${dval.toFixed(3)}`);
       sizes.push(7);
     }
   }
@@ -2094,7 +2317,10 @@ function renderUmap() {
     marker: {
       size: sizes, color: cs, colorscale: CMAP_DIVERGING,
       cmin: -mx, cmax: mx,
-      colorbar: { title: `Δ ${pw}<br>(stroke − ctrl)`, thickness: 14, len: 0.7 },
+      colorbar: {
+        title: `Δ ${pw}<br>(${(tp && tp !== '__all__') ? tp : 'all tp'} − ctrl)`,
+        thickness: 14, len: 0.7,
+      },
       line: { color: 'rgba(0,0,0,0.15)', width: 0.5 },
     },
     text: ts, hovertemplate: '%{text}<extra></extra>',
@@ -2118,6 +2344,236 @@ function renderUmap() {
 
 // small deterministic hash for UMAP jitter
 function hash(s) { let h = 0; for (let i=0;i<s.length;i++) { h = ((h<<5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h); }
+
+/* ============================================================
+   TAB 9 · CELL–CELL TALK (Ligand-Receptor)
+   Shows pooled stroke-vs-control signalling based on curated
+   L-R annotations (CellChat/CellPhoneDB) cross-referenced with
+   the member datasets. Two views:
+     1) source × target heatmap  — summed weight per cell pair
+     2) horizontal bar of top-N pairs by absolute Δ (or stroke)
+   ------------------------------------------------------------ */
+let LR_INITIALIZED = false;
+function initLigRec() {
+  if (LR_INITIALIZED) return;
+  LR_INITIALIZED = true;
+  // Populate the pathway-family dropdown from the data
+  const pwSet = new Set(DATA.ligRec.pairs.map(p => p.pathway));
+  const sel = document.getElementById('lr-pathway');
+  sel.innerHTML = '<option value="__all__">All pathways</option>' +
+    [...pwSet].sort().map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+function renderLigRec() {
+  initLigRec();
+  const bin     = document.getElementById('lr-bin').value;
+  const pathway = document.getElementById('lr-pathway').value;
+  const metric  = (document.querySelector('input[name="lr-metric"]:checked') || {}).value || 'delta';
+  const topN    = parseInt(document.getElementById('lr-topn').value, 10) || 15;
+
+  let pairs = DATA.ligRec.pairs.slice();
+  if (bin !== '__all__')     pairs = pairs.filter(p => p.bin === bin);
+  if (pathway !== '__all__') pairs = pairs.filter(p => p.pathway === pathway);
+
+  document.getElementById('lr-subtitle').textContent =
+    `${pairs.length} L–R pairs · ${bin === '__all__' ? 'all bins' : bin} · ${pathway === '__all__' ? 'all pathways' : pathway} · metric = ${metric}`;
+
+  // --- Heatmap source × target ---
+  const cells = ['Astrocyte','Microglia','OPC','Oligodendrocyte','Neuron','Endothelial','Pericyte','Fibroblast','Macrophage','T.cell'];
+  const mat = cells.map(() => cells.map(() => 0));
+  const count = cells.map(() => cells.map(() => 0));
+  const pairsBySrcTgt = {};
+  pairs.forEach(p => {
+    const i = cells.indexOf(p.source);
+    const j = cells.indexOf(p.target);
+    if (i < 0 || j < 0) return;
+    const v = metric === 'delta' ? p.delta : p.abs_stroke;
+    mat[i][j] += v;
+    count[i][j] += 1;
+    const key = `${p.source}||${p.target}`;
+    (pairsBySrcTgt[key] = pairsBySrcTgt[key] || []).push(`${p.ligand}→${p.receptor} (${p.pathway})`);
+  });
+
+  const flat = mat.flat();
+  const mx = Math.max(0.1, Math.max(...flat.map(v => Math.abs(v))));
+  const text = mat.map((row, i) => row.map((v, j) => {
+    const n = count[i][j];
+    if (!n) return '(no pairs)';
+    const pairStr = (pairsBySrcTgt[`${cells[i]}||${cells[j]}`] || []).slice(0, 6).join('<br>');
+    return `<b>${cells[i]} → ${cells[j]}</b><br>n pairs: ${n}<br>${metric === 'delta' ? 'Σ Δ' : 'Σ stroke'}: ${v.toFixed(2)}<br>${pairStr}`;
+  }));
+
+  const heatTrace = {
+    type: 'heatmap',
+    z: mat, x: cells, y: cells, text,
+    hovertemplate: '%{text}<extra></extra>',
+    colorscale: metric === 'delta' ? CMAP_DIVERGING : 'Viridis',
+    zmin: metric === 'delta' ? -mx : 0,
+    zmax: mx,
+    colorbar: { title: metric === 'delta' ? 'Σ Δ' : 'Σ stroke', thickness: 14, len: 0.8 },
+    xgap: 2, ygap: 2,
+  };
+
+  Plotly.react('chart-lr-heatmap', [heatTrace], {
+    title: { text: 'Cumulative L–R signalling strength (source → target)', font: { size: 13 } },
+    xaxis: { title: 'Target cell', tickangle: -30, automargin: true },
+    yaxis: { title: 'Source cell', autorange: 'reversed' },
+    margin: { l: 110, r: 40, t: 50, b: 90 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 440,
+  }, { responsive: true, displayModeBar: false });
+
+  // --- Top-N bar of individual pairs ---
+  const sorted = pairs.slice().sort((a, b) => Math.abs(b[metric]) - Math.abs(a[metric]));
+  const top = sorted.slice(0, topN);
+  const labels = top.map(p => `${p.ligand} → ${p.receptor}<br><span style="font-size:0.72rem;color:#666">${p.source}→${p.target} · ${p.pathway}</span>`);
+  const vals = top.map(p => p[metric]);
+  const colors = top.map(p => {
+    const v = p[metric];
+    if (metric !== 'delta') return '#0279EE';
+    return v > 0 ? '#C0392B' : '#0279EE';
+  });
+
+  const barTrace = {
+    type: 'bar', orientation: 'h',
+    x: vals, y: labels,
+    marker: { color: colors },
+    customdata: top.map(p => [p.datasets.join(', '), p.bin, p.abs_stroke, p.abs_ctrl]),
+    hovertemplate: '<b>%{y}</b><br>Δ: %{x:.2f}<br>Abs stroke / ctrl: %{customdata[2]:.2f} / %{customdata[3]:.2f}<br>Bin: %{customdata[1]}<br>Datasets: %{customdata[0]}<extra></extra>',
+  };
+
+  Plotly.react('chart-lr-top', [barTrace], {
+    title: { text: `Top ${topN} L–R pairs by |${metric}|`, font: { size: 13 } },
+    xaxis: { title: metric === 'delta' ? 'Δ stroke − ctrl' : 'Abs stroke', zeroline: true, zerolinecolor: '#333' },
+    yaxis: { autorange: 'reversed', tickfont: { size: 10 } },
+    margin: { l: 220, r: 40, t: 50, b: 50 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: Math.max(420, topN * 28 + 80),
+    showlegend: false,
+  }, { responsive: true, displayModeBar: false });
+}
+
+/* ============================================================
+   TAB 10 · DRUG TARGETS (cell-specific)
+   Dot plot: cell type × target, dot size = druggability, colour = Δ
+   + filterable table with status and drugs.
+   ------------------------------------------------------------ */
+let DG_INITIALIZED = false;
+function initDrugs() {
+  if (DG_INITIALIZED) return;
+  DG_INITIALIZED = true;
+  const cells = [...new Set(DATA.drugs.targets.map(t => t.cell_type))].sort();
+  const sel = document.getElementById('dg-celltype');
+  sel.innerHTML = '<option value="__all__">All cell types</option>' +
+    cells.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const slider = document.getElementById('dg-drugmin');
+  slider.addEventListener('input', () => {
+    document.getElementById('dg-drugmin-val').textContent = parseFloat(slider.value).toFixed(2);
+    renderDrugs();
+  });
+}
+function statusBucket(s) {
+  if (/approved/i.test(s)) return 'Approved';
+  if (/phase\s*3/i.test(s)) return 'Phase 3';
+  if (/phase\s*2/i.test(s)) return 'Phase 2';
+  if (/phase\s*1/i.test(s)) return 'Phase 1';
+  if (/biomarker/i.test(s)) return 'Biomarker';
+  return 'Preclinical';
+}
+function renderDrugs() {
+  initDrugs();
+
+  const ct        = document.getElementById('dg-celltype').value;
+  const drugMin   = parseFloat(document.getElementById('dg-drugmin').value);
+  const statusOK  = new Set([...document.querySelectorAll('.dg-status:checked')].map(c => c.value));
+
+  let rows = DATA.drugs.targets.slice().filter(t =>
+    (ct === '__all__' || t.cell_type === ct) &&
+    t.druggability >= drugMin &&
+    statusOK.has(statusBucket(t.status))
+  );
+  // Sort by absolute delta, descending
+  rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+
+  document.getElementById('dg-subtitle').textContent =
+    `${rows.length} targets · cell type = ${ct === '__all__' ? 'all' : ct} · min druggability = ${drugMin.toFixed(2)}`;
+
+  // Dot plot: gene on y, cell_type on x, colour = Δ, size = druggability
+  const cells   = [...new Set(rows.map(t => t.cell_type))];
+  const genes   = rows.map(t => `${t.gene}  ·  ${t.cell_type}`);
+  const xs      = rows.map(t => t.cell_type);
+  const ys      = genes;
+  const deltas  = rows.map(t => t.delta);
+  const mx      = Math.max(0.5, Math.max(...deltas.map(v => Math.abs(v))));
+  const sizes   = rows.map(t => 10 + t.druggability * 28);
+  const txt     = rows.map(t =>
+    `<b>${t.gene}</b> (${t.cell_type})<br>` +
+    `Pathway: ${t.pathway}<br>` +
+    `Δ log2FC: ${t.delta.toFixed(2)}  ·  n datasets: ${t.n_datasets}<br>` +
+    `Druggability: ${t.druggability.toFixed(2)}<br>` +
+    `Status: ${t.status}<br>` +
+    `Drugs: ${t.drugs.join(', ')}<br>` +
+    `<i>${t.rationale}</i>`
+  );
+
+  const dotTrace = {
+    type: 'scatter', mode: 'markers',
+    x: xs, y: ys,
+    marker: {
+      size: sizes, color: deltas, colorscale: CMAP_DIVERGING,
+      cmin: -mx, cmax: mx,
+      line: { color: 'rgba(0,0,0,0.3)', width: 0.5 },
+      colorbar: { title: 'Δ log2FC<br>(stroke − ctrl)', thickness: 14, len: 0.8 },
+    },
+    text: txt, hovertemplate: '%{text}<extra></extra>',
+  };
+
+  Plotly.react('chart-dg-dot', [dotTrace], {
+    xaxis: { title: 'Cell type', tickangle: -30, automargin: true, categoryorder: 'array', categoryarray: cells },
+    yaxis: { tickfont: { size: 10 }, automargin: true, autorange: 'reversed' },
+    margin: { l: 220, r: 40, t: 30, b: 90 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: Math.max(520, rows.length * 22 + 100),
+    showlegend: false,
+  }, { responsive: true, displayModeBar: false });
+
+  // Table of top 20 by |Δ|
+  const top = rows.slice(0, 20);
+  const tableHtml = `
+    <div style="overflow:auto;max-height:420px;border:1px solid #eee;border-radius:6px">
+      <table style="width:100%;border-collapse:collapse;font-size:0.8rem">
+        <thead style="position:sticky;top:0;background:#F8FAFC">
+          <tr>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Gene</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Cell type</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Pathway</th>
+            <th style="text-align:right;padding:6px 10px;border-bottom:1px solid #ddd">Δ log2FC</th>
+            <th style="text-align:right;padding:6px 10px;border-bottom:1px solid #ddd">Drugg.</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Status</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Drugs</th>
+            <th style="text-align:left;padding:6px 10px;border-bottom:1px solid #ddd">Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${top.map(t => {
+            const col = t.delta > 0 ? '#C0392B' : '#0279EE';
+            return `<tr>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0;font-weight:600">${t.gene}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0">${t.cell_type}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0">${t.pathway}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0;text-align:right;color:${col};font-weight:600">${t.delta.toFixed(2)}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0;text-align:right">${t.druggability.toFixed(2)}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0">${t.status}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0">${t.drugs.join(', ')}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid #f0f0f0;color:#555">${t.rationale}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  document.getElementById('dg-table').innerHTML = tableHtml;
+}
 
 /* ============================================================
    EVENT WIRING & INIT
@@ -2164,7 +2620,21 @@ function wireEvents() {
 
   // UMAP
   document.getElementById('um-pathway').addEventListener('change', renderUmap);
-  document.getElementById('um-dataset').addEventListener('change', renderUmap);
+  document.getElementById('um-dataset').addEventListener('change', () => {
+    populateUmapTimepoints();
+    renderUmap();
+  });
+  document.getElementById('um-timepoint').addEventListener('change', renderUmap);
+
+  // Ligand-Receptor (Cell-Cell Talk)
+  document.getElementById('lr-bin').addEventListener('change', renderLigRec);
+  document.getElementById('lr-pathway').addEventListener('change', renderLigRec);
+  document.getElementById('lr-topn').addEventListener('change', renderLigRec);
+  document.querySelectorAll('input[name="lr-metric"]').forEach(r => r.addEventListener('change', renderLigRec));
+
+  // Drug targets
+  document.getElementById('dg-celltype').addEventListener('change', renderDrugs);
+  document.querySelectorAll('.dg-status').forEach(c => c.addEventListener('change', renderDrugs));
 }
 
 async function init() {
