@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Stroke Vascular Datasets — Comprehensive Overview</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; color: #222; }
+  h1 { font-size: 18px; color: #1a3a5c; margin-bottom: 4px; }
+  h2 { font-size: 13px; color: #555; font-weight: normal; margin-top: 2px; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  th { background-color: #1a3a5c; color: white; padding: 8px 6px; text-align: left; 
+       font-size: 11px; border: 1px solid #ccc; vertical-align: top; }
+  td { padding: 6px 6px; border: 1px solid #ddd; vertical-align: top; font-size: 11px; line-height: 1.4; }
+  tr:nth-child(even) { background-color: #f5f8fc; }
+  tr:hover { background-color: #e8f0fb; }
+  .gse { font-weight: bold; color: #1a3a5c; white-space: nowrap; }
+  .mouse { background-color: #e8f5e9; }
+  .rat   { background-color: #fff8e1; }
+  .human { background-color: #fce4ec; }
+  .pending { color: #e65100; font-style: italic; }
+  .completed { color: #2e7d32; }
+  .zero { color: #999; }
+  .note { font-size: 10px; color: #555; }
+  .tag { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px; 
+         font-weight: bold; margin-right: 2px; }
+  .tag-sc  { background: #e3f2fd; color: #1565c0; }
+  .tag-sn  { background: #f3e5f5; color: #6a1b9a; }
+  .tag-bulk{ background: #e8f5e9; color: #2e7d32; }
+  .tag-arr { background: #fff3e0; color: #e65100; }
+  caption { font-size: 11px; color: #777; text-align: left; padding: 6px 0; }
+</style>
+</head>
+<body>
+<h1>Stroke Brain Vasculature Datasets — Comprehensive Overview</h1>
+<h2>18 datasets analyzed for stroke-upregulated EC and pericyte surface targets | All entries verified against GEO pages</h2>
+<table>
+<caption>Sorted by analysis completion status then by dataset accession. IBZ = ischemic border zone; tMCAO = transient MCAO; pMCAO = permanent MCAO; dMCAO = distal MCAO; EC = endothelial cell; DEG = differentially expressed gene.</caption>
+<colgroup>
+  <col style="width:6%">
+  <col style="width:13%">
+  <col style="width:10%">
+  <col style="width:5%">
+  <col style="width:8%">
+  <col style="width:7%">
+  <col style="width:6%">
+  <col style="width:9%">
+  <col style="width:9%">
+  <col style="width:12%">
+  <col style="width:7%">
+  <col style="width:8%">
+</colgroup>
+<thead>
+<tr>
+  <th>GEO Accession</th>
+  <th>Publication / Title</th>
+  <th>Species &amp; Model</th>
+  <th>Assay</th>
+  <th>Timepoint(s)</th>
+  <th>Sample Type / Tissue</th>
+  <th>N (biological)</th>
+  <th>Cell Types Resolved</th>
+  <th>EC &amp; Pericyte Coverage</th>
+  <th>EC DEGs Up / Pericyte DEGs Up</th>
+  <th>DEG Method</th>
+  <th>Key Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class='mouse'><td class='gse'>GSE223744</td><td>Arbaizar-Rovirosa et al.<br><i>J Neuroinflammation</i> 2023</td><td>Mouse<br>tMCAO</td><td><span class='tag tag-bulk'>Bulk</span></td><td>24h</td><td>FACS-sorted CD31+/CD45- brain ECs</td><td>n=4 ischemia<br>n=4 naive</td><td>ECs only (sorted)</td><td>EC only (primary)</td><td><span class='completed'>1,607 up</span><br>—</td><td>DESeq2</td><td>Primary EC dataset; ECSCR top hit (log2FC=2.85); basis for 78-gene target list</td></tr>
+<tr class='mouse'><td class='gse'>GSE225948</td><td>Garcia-Bonilla et al.<br><i>Nature Immunology</i> 2024</td><td>Mouse<br>tMCAO</td><td><span class='tag tag-sc'>scRNA</span></td><td>Day 2, Day 14</td><td>Whole brain + blood</td><td>n=4 stroke<br>n=4 sham<br>~50K cells</td><td>EC, T/B/NK cells, monocytes, macrophages, neutrophils, microglia</td><td>EC + immune (EC cluster extracted)</td><td><span class='completed'>282 up</span><br>—</td><td>DESeq2 pseudobulk</td><td>Confirms ECSCR, CD93, PLAUR, SEMA6D at Day 2; brain + blood atlas</td></tr>
+<tr class='mouse'><td class='gse'>GSE233815</td><td>Zucha et al.<br><i>PNAS</i> 2024</td><td>Mouse<br>pMCAO</td><td><span class='tag tag-bulk'>Bulk</span></td><td>24h, 3d, 7d</td><td>Whole brain (bulk)</td><td>n=4–5 per timepoint<br>(18 mice)</td><td>Bulk — no resolution</td><td>Indirect (whole-brain)</td><td><span class='completed'>38 up</span><br>—</td><td>DESeq2</td><td>Whole-brain confirmatory; HMOX1 highest FC (5.68 at 3d); ECSCR confirmed</td></tr>
+<tr class='mouse'><td class='gse'>GSE234052</td><td>Carlsson, Buizza et al.<br><i>Transl Stroke Res</i> 2023</td><td>Mouse<br>pMCAO</td><td><span class='tag tag-sc'>scRNA</span></td><td>1h, 12h, 24h<br>(ipsi vs. contra)</td><td>FACS-sorted RGS5::GFP+ pericytes (ipsi + contra cortex)</td><td>n=7 mice<br>6 samples</td><td>EC, Pericytes, SMCs (NVU focus)</td><td>Pericyte + EC + SMC</td><td><span class='completed'>258 up</span><br>—</td><td>Wilcoxon (scanpy)</td><td>Pericyte/NVU focus; permanent MCAO; confirms PLAUR, IFITM1, NT5E</td></tr>
+<tr class='human'><td class='gse'>GSE9391</td><td>Mitsios et al.<br><i>Neuropathol Appl Neurobiol</i> 2007</td><td>Human<br>Post-mortem</td><td><span class='tag tag-arr'>Array</span></td><td>Short/mid/long-term</td><td>Post-mortem cortex (infarct vs. control)</td><td>n=6 pooled samples</td><td>Bulk — no resolution</td><td>Indirect (bulk cortex)</td><td><span class='completed'>114 up</span><br>—</td><td>limma</td><td>Human validation; SELE (log2FC=7.59), ACKR1 (log2FC=8.25) confirmed</td></tr>
+<tr class='mouse'><td class='gse'>GSE300442</td><td>Shabanzadeh et al.<br><i>Nat Cardiovasc Res</i> 2025</td><td>Mouse<br>tMCAO</td><td><span class='tag tag-sc'>scRNA</span></td><td>~2 days</td><td>FACS-sorted CD31+/CD45- brain ECs (ipsi + contra)</td><td>n=5 samples<br>~4,275 ECs</td><td>ECs only (sorted)</td><td>EC only (FACS-sorted)</td><td><span class='completed'>44 up</span><br>—</td><td>Wilcoxon (FindMarkers)</td><td>SKI-1 inhibitor (PF-429242) study; sham vs. vehicle vs. treated groups</td></tr>
+<tr class='mouse'><td class='gse'>GSE146930</td><td>Bernier et al.<br><i>Nature Neuroscience</i> 2025</td><td>Mouse<br>Ischemic stroke</td><td><span class='tag tag-sc'>scRNA</span> + <span class='tag tag-bulk'>Bulk</span></td><td>Recovery (unspecified)</td><td>Brain perivascular niche</td><td>n=2 ctrl, n=2 stroke<br>(scRNA); n=1 bulk</td><td>Pericytes, Perivascular fibroblasts, Venular SMCs</td><td>Pericyte + fibroblast (primary)</td><td><span class='zero'>0 (low power)</span><br><span class='completed'>121 up</span></td><td>DESeq2 pseudobulk</td><td>Pericyte fate-tracking (Hic1+ progenitors); stroke recovery; Nat Neurosci 2025</td></tr>
+<tr class='mouse'><td class='gse'>GSE174574</td><td>Zheng et al.<br><i>J Cereb Blood Flow Metab</i> 2022</td><td>Mouse<br>tMCAO</td><td><span class='tag tag-sc'>scRNA</span></td><td>24h</td><td>Whole brain (single-cell suspension)</td><td>n=3 sham<br>n=3 MCAO</td><td>Neurons, Oligos, Astrocytes, Microglia, EC (art./cap./ven. subtypes), Pericytes, OPCs</td><td>EC subtypes (art./cap./ven.) + Pericyte</td><td><span class='pending'>Pending</span><br><span class='pending'>Pending</span></td><td>Pending</td><td>EC subtype resolution (arterial/capillary/venous); 17 brain clusters</td></tr>
+<tr class='mouse'><td class='gse'>GSE197341</td><td>Nakamura et al.<br><i>Cell Reports</i> 2025</td><td>Mouse<br>dMCAO</td><td><span class='tag tag-sc'>scRNA</span></td><td>D3, D7, D14, D28; sham</td><td>Cerebral cortex</td><td>n=3 sham; n=3 D3; n=4 D7;<br>n=3 D14; n=4 D28<br>(107,014 cells)</td><td>Neurons, Oligos, Astrocytes, Microglia, Fibroblasts, OPCs, EC, Pericytes, Macrophages</td><td>EC + Pericyte (among 9 types)</td><td><span class='pending'>Pending</span><br><span class='pending'>Pending</span></td><td>Pending</td><td>Longitudinal recovery (D3–D28); leptomeningeal neural crest cells; 107K cells</td></tr>
+<tr class='mouse'><td class='gse'>GSE227651</td><td>Zeng et al.<br><i>Front Immunology</i> 2023</td><td>Mouse<br>tMCAO</td><td><span class='tag tag-sc'>scRNA</span></td><td>D1, D3, D7; sham</td><td>Ipsilateral cerebral hemisphere</td><td>n=1 per timepoint<br>(4 samples)</td><td>Microglia (focus), Neurons, Astrocytes, Oligos, EC, Pericytes, OPCs, T cells</td><td>EC + Pericyte (among 8 types)</td><td><span class='zero'>0 (incomplete)</span><br><span class='completed'>39 up</span></td><td>Wilcoxon (FindMarkers)</td><td>Microglia focus (Itgb2+ subclusters); n=1 per timepoint — low power for EC/pericyte</td></tr>
+<tr class='mouse'><td class='gse'>GSE244576</td><td>Zhang H et al.<br><i>Unpublished</i></td><td>Mouse<br>tMCAO (90 min)</td><td><span class='tag tag-sn'>snRNA</span></td><td>3 days</td><td>Whole brain (nuclei)</td><td>n=1 sham, n=2 vehicle,<br>n=2 QO-83<br>(62,080 nuclei)</td><td>Neurons, Oligos, Astrocytes, Microglia, EC, Pericytes, OPCs</td><td>EC + Pericyte (among 7 types)</td><td><span class='completed'>189 up</span><br><span class='completed'>829 up</span></td><td>Wilcoxon (FindMarkers)</td><td>Kv7/KCNQ channel opener QO-83; n=1 sham (low power); strong MCAO response</td></tr>
+<tr class='rat'><td class='gse'>GSE250245</td><td>Bormann et al.<br><i>Nature Communications</i> 2024</td><td><b>Rat</b><br>pMCAO</td><td><span class='tag tag-sn'>snRNA</span></td><td>48h</td><td>Bilateral hemispheres (ipsi + contra; moderate + severe MCAO)</td><td>n=6 samples<br>~73,826 nuclei</td><td>Neurons, Oligos, Astrocytes, Microglia, OPCs, EC, Pericytes, Macrophages, Immune</td><td>EC + Pericyte (among 8 types)</td><td><span class='zero'>0 (no up at 48h)</span><br><span class='zero'>0 (no up at 48h)</span></td><td>Wilcoxon (FindMarkers)</td><td>Only rat dataset; moderate vs. severe MCAO; bilateral hemispheres; Nat Comms 2024</td></tr>
+<tr class='mouse'><td class='gse'>GSE250597</td><td>Loan et al.<br><i>Theranostics</i> 2024</td><td>Mouse<br>ET-1/L-NAME focal</td><td><span class='tag tag-sc'>scRNA</span></td><td>3 days</td><td>FACS-sorted pericyte lineage-traced cells (tdT+/DAPI-, cortex)</td><td>n=3 naive, n=3 non-stroke,<br>n=3 stroke per subtype<br>(~21,323 cells)</td><td>Pericytes (NG2+ and Tbx18+ subtypes), SMCs, EC, Fibroblasts</td><td>Pericyte only (FACS-sorted, 2 subtypes)</td><td>—<br><span class='completed'>20 up</span></td><td>Wilcoxon (FindMarkers)</td><td>Pericyte lineage tracing (NG2+ vs. Tbx18+); ET-1 focal model; Theranostics 2024</td></tr>
+<tr class='mouse'><td class='gse'>GSE276202</td><td>Weber*, <b>Rust*</b> et al.<br><i>J Neuroinflammation</i> 2025</td><td>Mouse<br>pMCAO</td><td><span class='tag tag-sn'>snRNA</span></td><td>1 month</td><td>Stroke core, peri-infarct (IBZ), contralesional cortex (nuclei)</td><td>3 pooled samples<br>from 9 mice<br>~24,150 nuclei</td><td>Neurons (glut./GABA), Astrocytes, Oligos, OPCs, Microglia, EC, Pericytes, Fibroblasts, Immune</td><td>EC + Pericyte (among 9 types)</td><td><span class='zero'>0 (all EC down in core)</span><br><span class='zero'>0 (no ctrl pericytes)</span></td><td>Wilcoxon (FindMarkers)</td><td>Ruslan Rust's dataset; chronic stroke (1 month); 9 mice pooled into 3 regions</td></tr>
+<tr class='mouse'><td class='gse'>GSE279666</td><td>Ikegami et al.<br><i>Exp Neurology</i> 2025</td><td>Mouse<br>dMCAO</td><td><span class='tag tag-sn'>snRNA</span></td><td>D3, D14; healthy ctrl; sham</td><td>Brain (nuclei)</td><td>n=1 per condition<br>(~25,407 nuclei)</td><td>Neurons (glut./GABA), Oligos, Astrocytes, OPCs, Microglia, EC, Pericytes</td><td>EC + Pericyte (among 7 types)</td><td><span class='completed'>20 up</span><br><span class='zero'>0 (all down)</span></td><td>DESeq2 pseudobulk</td><td>Multi-timepoint (D3+D14); dMCAO; pseudobulk DESeq2; Exp Neurology 2025</td></tr>
+<tr class='mouse'><td class='gse'>GSE300564</td><td>Zera, Bradshaw et al.<br><i>Unpublished</i> (Stanford/Buckwalter)</td><td>Mouse<br>Cortical stroke</td><td><span class='tag tag-sc'>scRNA</span></td><td>Chronic<br>(10-month-old mice)</td><td>Infarct core + peri-infarct cortex</td><td>n=4: sham-isotype,<br>stroke-isotype,<br>stroke-anti-VCAM1,<br>stroke-anti-VLA4<br>(~4,395 cells)</td><td>EC, Pericytes, Immune (B/T lymphocytes, macrophages)</td><td>EC + Pericyte (vascular focus)</td><td><span class='completed'>16 up</span><br><span class='zero'>0</span></td><td>Wilcoxon (FindMarkers)</td><td>Chronic stroke; VCAM1/VLA4 blockade; vascular focus; Stanford/Buckwalter lab</td></tr>
+<tr class='mouse'><td class='gse'>GSE310324</td><td>Bradshaw et al.<br><i>J Neuroinflammation</i> (in press)</td><td>Mouse<br>Cortical stroke</td><td><span class='tag tag-sc'>scRNA</span></td><td>72h</td><td>Brain cortex (infarct + surrounding) + PBMCs</td><td>n=8: PBMC+cortex x<br>ctrl/HFD x sham/stroke<br>(~17,347 cells)</td><td>Microglia, Oligos, EC, Astrocytes, Pericytes, Unknown; PBMCs: macrophages, neutrophils, DCs, T cells</td><td>EC + Pericyte (among 7 types)</td><td><span class='completed'>4 up</span><br><span class='completed'>4 up</span></td><td>Wilcoxon (FindMarkers)</td><td>Obesity (HFD) x stroke; myeloid/neutrophil focus; n=1 per group (low power for ECs)</td></tr>
+<tr class='human'><td class='gse'>GSE56267</td><td>Huttner et al.<br><i>Nature Neuroscience</i> 2014</td><td><b>Human</b><br>Post-mortem</td><td><span class='tag tag-bulk'>Bulk</span></td><td>Acute + chronic<br>(post-mortem)</td><td>Neocortex (ischemic stroke vs. control)</td><td>n=7 stroke<br>n=6 control<br>(13 samples)</td><td>Bulk — no resolution</td><td>Indirect (bulk cortex)</td><td><span class='completed'>34 up</span><br>—</td><td>DESeq2</td><td>Human post-mortem; 7 stroke vs. 6 control; fusion transcript analysis; Nat Neurosci 2014</td></tr>
+</tbody>
+</table>
+<br>
+<p style="font-size:10px; color:#777;">
+<b>Row colors:</b> 
+<span style="background:#e8f5e9; padding:1px 6px;">Mouse</span> &nbsp;
+<span style="background:#fff8e1; padding:1px 6px;">Rat</span> &nbsp;
+<span style="background:#fce4ec; padding:1px 6px;">Human</span><br>
+<b>Assay tags:</b> 
+<span class="tag tag-sc">scRNA</span> = single-cell RNA-seq &nbsp;
+<span class="tag tag-sn">snRNA</span> = single-nucleus RNA-seq &nbsp;
+<span class="tag tag-bulk">Bulk</span> = bulk RNA-seq &nbsp;
+<span class="tag tag-arr">Array</span> = microarray<br>
+<b>DEG thresholds (dynamic):</b> padj&lt;0.05 &rarr; padj&lt;0.1 &rarr; pval&lt;0.05 &rarr; top 10% by p-value | log2FC&ge;1 (log2FC&ge;0.5 fallback for pre-filtered datasets)<br>
+<b>Generated:</b> 2026-04-10 | Ruslan Rust lab
+</p>
+</body>
+</html>

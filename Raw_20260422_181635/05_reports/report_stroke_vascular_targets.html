@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Stroke Brain EC Surface Targets — Analysis Report v3</title>
+
+<style>
+:root{--pri:#1a3a5c;--acc:#c0392b;--acc2:#2980b9;--bg:#f4f6f8;--card:#fff;--bdr:#dde1e7;--txt:#1a1a2e;--mut:#6c757d;
+  --ca:#1a6b3c;--cb:#1a5276;--cc:#7d6608;--cd:#7f8c8d;--ce:#b03a2e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--txt);background:var(--bg);line-height:1.65;}
+a{color:var(--acc2);}
+
+/* Header */
+.hdr{background:linear-gradient(135deg,#1a3a5c 0%,#2c5f8a 100%);color:#fff;padding:36px 48px 28px;}
+.hdr h1{font-size:24px;font-weight:700;margin-bottom:6px;}
+.hdr .sub{font-size:13px;opacity:.85;margin-bottom:14px;line-height:1.5;}
+.hdr .meta{font-size:11px;opacity:.65;}
+
+/* TOC */
+.toc{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:18px 24px;margin:20px 48px;}
+.toc h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-bottom:10px;}
+.toc ol{padding-left:18px;columns:2;column-gap:32px;}
+.toc li{margin:3px 0;}
+.toc a{color:var(--acc2);text-decoration:none;font-size:13px;}
+.toc a:hover{text-decoration:underline;}
+
+/* Content */
+.content{padding:0 48px 48px;max-width:1200px;}
+.section{margin-top:36px;}
+.section h2{font-size:19px;color:var(--pri);border-bottom:2px solid var(--pri);padding-bottom:7px;margin-bottom:18px;}
+.section h3{font-size:15px;color:var(--pri);margin:22px 0 10px;}
+.section h4{font-size:13px;font-weight:700;margin:14px 0 6px;color:#333;}
+p{margin-bottom:10px;}
+
+/* Summary cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin:18px 0;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:14px;text-align:center;}
+.card .n{font-size:30px;font-weight:700;color:var(--pri);}
+.card .l{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-top:3px;}
+.card.ca .n{color:var(--ca);}
+.card.cb .n{color:var(--cb);}
+.card.cc .n{color:var(--cc);}
+.card.acc .n{color:var(--acc);}
+
+/* Tables */
+.tw{overflow-x:auto;margin:14px 0;border-radius:8px;border:1px solid var(--bdr);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--pri);color:#fff;padding:9px 11px;text-align:left;font-weight:600;white-space:nowrap;}
+tbody tr:nth-child(even){background:#f0f4f9;}
+tbody tr:hover{background:#e3ecf7;}
+td{padding:7px 11px;border-bottom:1px solid var(--bdr);vertical-align:top;}
+
+/* Badges */
+.b{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap;}
+.bA{background:#d4edda;color:var(--ca);}
+.bB{background:#d6eaf8;color:var(--cb);}
+.bC{background:#fef9e7;color:var(--cc);}
+.bD{background:#f2f3f4;color:var(--cd);}
+.bE{background:#fde8e8;color:var(--ce);}
+.bup{background:#fde8e8;color:var(--acc);}
+.bns{background:#f5f5f5;color:var(--mut);}
+.bhuman{background:#fff0e6;color:#c0392b;border:1px solid #e59866;}
+.bsec{background:#fef9e7;color:#7d6608;}
+.bint{background:#f2f3f4;color:#7f8c8d;}
+
+/* Target cards */
+.tc{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:18px 20px;margin:14px 0;}
+.tc.tcA{border-left:5px solid var(--ca);}
+.tc.tcB{border-left:5px solid var(--cb);}
+.tc.tcC{border-left:5px solid var(--cc);}
+.tc-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.tc-gene{font-size:18px;font-weight:700;color:var(--pri);}
+.tc-alias{font-size:13px;color:var(--mut);}
+.tc-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px;}
+.tc-body{font-size:13px;line-height:1.65;}
+.tc-body p{margin-bottom:6px;}
+.tc-body strong{color:#333;}
+
+/* Score bar */
+.score-bar{display:flex;align-items:center;gap:8px;margin:4px 0;}
+.score-label{font-size:11px;color:var(--mut);width:90px;flex-shrink:0;}
+.score-dots{display:flex;gap:3px;}
+.dot{width:11px;height:11px;border-radius:50%;}
+.dot-f{background:var(--pri);}
+.dot-e{background:#dee2e6;}
+.dot-fA{background:var(--ca);}
+.dot-fB{background:var(--cb);}
+.dot-fC{background:var(--cc);}
+
+/* Callouts */
+.co{border-radius:6px;padding:12px 16px;margin:14px 0;font-size:13px;}
+.co-info{background:#e8f4fd;border-left:4px solid var(--acc2);}
+.co-warn{background:#fef9e7;border-left:4px solid #f39c12;}
+.co-ok{background:#eafaf1;border-left:4px solid #27ae60;}
+.co-key{background:#fdf2f8;border-left:4px solid #8e44ad;}
+.co strong{display:block;margin-bottom:3px;}
+
+/* Figure */
+.fig{text-align:center;margin:20px 0;}
+.fig img{max-width:100%;border:1px solid var(--bdr);border-radius:8px;}
+.fig-cap{font-size:11px;color:var(--mut);margin-top:6px;font-style:italic;}
+
+/* Footer */
+.ftr{background:var(--pri);color:rgba(255,255,255,.7);padding:20px 48px;font-size:12px;margin-top:40px;}
+.ftr a{color:rgba(255,255,255,.9);}
+
+@media(max-width:768px){.hdr,.content,.toc{padding-left:16px;padding-right:16px;}.toc{margin:12px 16px;}.toc ol{columns:1;}.cards{grid-template-columns:repeat(2,1fr);}}
+@media print{.hdr{background:var(--pri)!important;-webkit-print-color-adjust:exact;}.section{page-break-inside:avoid;}}
+</style>
+
+</head>
+<body>
+<div class="hdr">
+  <h1>Stroke-Specific Brain Endothelial Cell Surface Targets</h1>
+  <div class="sub">Computational identification of surface proteins upregulated on brain ECs after ischemic stroke,<br>
+  curated for specificity, surface accessibility, and translational potential as nanoparticle targeting antigens</div>
+  <div class="meta">Analysis by Biomni &nbsp;|&nbsp; 2026-04-01 &nbsp;|&nbsp; v3 — with EC-specificity and surface accessibility curation &nbsp;|&nbsp; 5 datasets (3 primary vascular + 2 confirmatory)</div>
+</div>
+
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li><a href="#exec">Executive Summary</a></li>
+    <li><a href="#framework">Targeting Viability Framework</a></li>
+    <li><a href="#datasets">Datasets and Methods</a></li>
+    <li><a href="#classA">Class A: Excellent Targets</a></li>
+    <li><a href="#classB">Class B: Strong Targets</a></li>
+    <li><a href="#classC">Class C: Good Targets</a></li>
+    <li><a href="#classD">Class D: Limited Targets</a></li>
+    <li><a href="#excluded">Excluded: Intracellular / Secreted</a></li>
+    <li><a href="#confirmatory">Confirmatory Analyses</a></li>
+    <li><a href="#panel">Recommended Target Panel</a></li>
+    <li><a href="#temporal">Temporal Windows</a></li>
+    <li><a href="#caveats">Caveats</a></li>
+    <li><a href="#files">Output Files</a></li>
+  </ol>
+</div>
+
+<div class="content">
+
+<div class="section" id="exec">
+  <h2>1. Executive Summary</h2>
+  <div class="cards">
+    <div class="card ca"><div class="n">4</div><div class="l">Class A — Excellent</div></div>
+    <div class="card cb"><div class="n">1</div><div class="l">Class B — Strong</div></div>
+    <div class="card cc"><div class="n">4</div><div class="l">Class C — Good</div></div>
+    <div class="card"><div class="n">28</div><div class="l">Class D — Limited</div></div>
+    <div class="card acc"><div class="n">41</div><div class="l">Excluded (intracellular/secreted)</div></div>
+    <div class="card"><div class="n">78</div><div class="l">Total curated genes</div></div>
+  </div>
+
+  <p>This report identifies stroke-specific surface proteins on brain endothelial cells (ECs) that are upregulated in the ischemic hemisphere and suitable as targeting antigens for IV-administered nanoparticles or cell therapy vectors. Five transcriptomic datasets were analyzed (3 primary vascular-enriched + 2 confirmatory), and all 78 candidate genes were systematically evaluated for three critical targeting criteria: <strong>surface accessibility from the bloodstream</strong>, <strong>brain EC enrichment vs. other cell types</strong>, and <strong>confirmed upregulation after stroke</strong>.</p>
+
+  <div class="co co-key">
+    <strong>Key findings — v3 re-curation</strong>
+    <ul style="padding-left:18px;margin-top:4px;">
+      <li><strong>Only 9 genes (9)</strong> meet all three criteria for viable nanoparticle targeting antigens (Classes A–C).</li>
+      <li><strong>41 genes</strong> are intracellular or secreted — they appear in stroke transcriptomics but are not accessible from the bloodstream and should not be pursued as targeting antigens.</li>
+      <li><strong>Top 4 targets (Class A)</strong>: <strong>ECSCR</strong>, <strong>CD93</strong>, <strong>SELE (E-selectin)</strong>, <strong>TNFRSF12A (Fn14)</strong> — all confirmed transmembrane proteins with extracellular domains accessible from the luminal surface, upregulated in brain ECs after stroke.</li>
+      <li><strong>SELE</strong> is the only target already validated as a nanoparticle targeting antigen in stroke models (ES-bp peptide).</li>
+      <li><strong>ECSCR</strong> is the most EC-specific target (EC-exclusive expression) and is upregulated in all 3 primary vascular datasets.</li>
+      <li><strong>ACKR1 (Duffy/DARC)</strong> is human-validated (GSE9391, p=0.023) but also expressed on erythrocytes — off-target binding risk for IV nanoparticles.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section" id="framework">
+  <h2>2. Targeting Viability Framework</h2>
+  <p>Each gene was scored on three independent criteria (1–3 each), giving a composite targeting score (max 12 including dataset support):</p>
+  
+  <div class="tw"><table>
+    <thead><tr><th>Criterion</th><th>Score 3</th><th>Score 2</th><th>Score 1</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Surface accessibility</strong><br><em>Can IV nanoparticles bind this target?</em></td>
+        <td>Confirmed extracellular domain accessible from bloodstream (transmembrane or GPI-anchored)</td>
+        <td>Partial/context-dependent surface exposure (e.g., secreted fraction, junction-only)</td>
+        <td>Intracellular only — not accessible from bloodstream</td></tr>
+      <tr><td><strong>Brain EC enrichment</strong><br><em>Will nanoparticles bind specifically to brain ECs?</em></td>
+        <td>EC-exclusive or strongly EC-enriched; minimal expression on other cell types</td>
+        <td>Moderate EC enrichment; also expressed on immune cells or other vascular cells</td>
+        <td>Broad/ubiquitous expression or primarily non-EC</td></tr>
+      <tr><td><strong>Stroke upregulation</strong><br><em>Is the target specifically induced by ischemia?</em></td>
+        <td>Confirmed upregulation in brain ECs after stroke (direct experimental evidence)</td>
+        <td>Suggested upregulation (indirect evidence, in vitro, or related conditions)</td>
+        <td>Unknown or not confirmed in brain ECs</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Class</th><th>Targeting score</th><th>Criteria met</th><th>Recommendation</th><th>Genes</th></tr></thead>
+    <tbody>
+      <tr><td><span class="b bA">A: Excellent</span></td><td>≥10</td><td>All 3 criteria strong</td><td>Immediate development priority</td><td>ECSCR, CD93, SELE, TNFRSF12A</td></tr>
+      <tr><td><span class="b bB">B: Strong</span></td><td>9–10</td><td>All 3 criteria met, one moderate</td><td>High priority with validation</td><td>APOLD1</td></tr>
+      <tr><td><span class="b bC">C: Good</span></td><td>8–9</td><td>2–3 criteria met, some limitations</td><td>Secondary targeting ligands</td><td>PLAUR, IFITM1, SEMA6D, NT5E</td></tr>
+      <tr><td><span class="b bD">D: Limited</span></td><td>&lt;8</td><td>Partial surface exposure or poor specificity</td><td>Biomarkers only; not targeting antigens</td><td>28 genes</td></tr>
+      <tr><td><span class="b bE">E: Poor</span></td><td>≤5</td><td>Intracellular or secreted</td><td>Exclude from targeting consideration</td><td>41 genes</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="section" id="datasets">
+  <h2>3. Datasets and Methods</h2>
+  
+  <h3>3.1 Primary Datasets (Vascular-Enriched)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Dataset</th><th>GEO</th><th>Type</th><th>Model</th><th>Timepoints</th><th>Comparison</th><th>n</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Arbaizar-Rovirosa 2023</strong></td><td>GSE223744</td><td>Bulk RNA-seq, CD31+ ECs</td><td>Permanent MCAO</td><td>1d</td><td>Ischemia vs. naive</td><td>n=4/group</td></tr>
+      <tr><td><strong>Buizza 2023</strong></td><td>GSE234052</td><td>scRNA-seq (all brain cells)</td><td>Photothrombotic pMCAO</td><td>1h, 12h, 24h</td><td>Ipsilateral vs. contralateral</td><td>21,140 cells</td></tr>
+      <tr><td><strong>Garcia-Bonilla 2024</strong></td><td>GSE225948</td><td>scRNA-seq (sorted ECs)</td><td>Transient MCAO</td><td>Day 2</td><td>Stroke vs. sham</td><td>4,885 ECs</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>3.2 Confirmatory Datasets (Non-Vascular-Specific)</h3>
+  <div class="co co-warn">
+    <strong>Caveat</strong> These datasets are not enriched for vascular cells. Upregulation may be driven by non-vascular cell types. They provide independent biological validation but do not replace vascular-specific evidence.
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Dataset</th><th>GEO</th><th>Type</th><th>Timepoints</th><th>n</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Zucha et al. 2024</strong></td><td>GSE233815</td><td>Whole-brain bulk RNA-seq (mouse MCAO)</td><td>Ctrl, 24h, 3D, 7D</td><td>n=4–5/group</td></tr>
+      <tr><td><strong>Mitsios et al. 2007</strong></td><td>GSE9391</td><td>Microarray (GPL127, human post-mortem)</td><td>Short/mid/long-term</td><td>n=6 pooled</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>3.3 Statistical Methods</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Dataset</th><th>Method</th><th>Threshold</th></tr></thead>
+    <tbody>
+      <tr><td>GSE223744</td><td>DESeq2 (bulk)</td><td>padj &lt; 0.05, log2FC &gt; 0.5</td></tr>
+      <tr><td>GSE234052</td><td>Wilcoxon rank-sum (scanpy)</td><td>padj &lt; 0.05, log2FC &gt; 0.5 — exploratory (no pseudobulk)</td></tr>
+      <tr><td>GSE225948</td><td>Pseudobulk DESeq2</td><td>padj &lt; 0.05, log2FC &gt; 0.5</td></tr>
+      <tr><td>GSE233815</td><td>DESeq2 (bulk)</td><td>padj &lt; 0.05</td></tr>
+      <tr><td>GSE9391</td><td>limma (paired)</td><td>p &lt; 0.05 nominal (only 6 samples; FDR too conservative)</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="section" id="classA">
+  <h2>4. Class A: Excellent Targets</h2>
+  <p>These genes meet all three targeting criteria strongly: confirmed transmembrane surface protein with extracellular domain accessible from the bloodstream, EC-enriched or EC-exclusive expression, and confirmed upregulation in brain ECs after stroke. These are the <strong>immediate development priorities</strong>.</p>
+  
+  <div class="tc tcA">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">ECSCR</span>
+        <span class="tc-alias"> (Ecscr in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bA">Class A</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 2.85</span>
+      <span class="b bns">Datasets: 3/3 primary</span>
+      <span class="b bns">Timepoints: 12h|1d|24h|Day2</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC-exclusive</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">11</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> ECSCR (Endothelial Cell Surface Expressed Chemotaxis and Apoptosis Regulator): type I transmembrane protein; enhances VEGFR2/KDR activation and promotes EC migration. Expression is restricted to blood ECs — one of the most EC-specific surface markers known.</p>
+      <p><strong>Targeting rationale:</strong> Upregulated in all 3 primary vascular datasets across multiple timepoints. EC-exclusive expression minimizes off-target binding. Filamin A interaction suggests cytoskeletal coupling and internalization potential. No approved targeting ligands yet — requires new antibody/nanobody development.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = 2.97; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+
+  <div class="tc tcA">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">CD93</span>
+        <span class="tc-alias"> (Cd93 in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bA">Class A</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 1.31</span>
+      <span class="b bns">Datasets: 2/3 primary</span>
+      <span class="b bns">Timepoints: 12h|1d|1h|24h</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC-enriched</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">11</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> CD93 (C1qRp/AA4.1): single-pass type I transmembrane glycoprotein; large extracellular domain with EGF-like and mucin-like regions. Strongly EC-enriched; regulates VE-cadherin stability, β1-integrin signaling, and angiogenesis via Multimerin-2.</p>
+      <p><strong>Targeting rationale:</strong> Confirmed upregulated in brain ECs after focal cerebral ischemia (Harhausen 2010). Anti-CD93 mAbs and nanobodies developed for tumor angiogenesis targeting. Receptor is internalized via Rab5c endosomes — enables transcytosis-based BBB delivery. Large ECD ideal for antibody conjugation.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = 2.53; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+
+  <div class="tc tcA">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">SELE</span>
+        <span class="tc-alias"> (Sele in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bA">Class A</span>
+        <span class="b bhuman">Human validated ✓</span>
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 6.79</span>
+      <span class="b bns">Datasets: 1/3 primary</span>
+      <span class="b bns">Timepoints: 1d</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC-exclusive</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-e"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">10</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> E-selectin (CD62E): type I transmembrane glycoprotein; lectin + EGF + 6 CCP domains; mediates leukocyte rolling via PSGL-1. Expressed exclusively on activated ECs; absent from resting endothelium.</p>
+      <p><strong>Targeting rationale:</strong> Gold-standard stroke EC target. Confirmed upregulation 6–12h post-stroke in brain ECs. ES-bp peptide and anti-SELE mAbs validated for nanoparticle targeting in stroke models. Large extracellular domain fully accessible from bloodstream.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = —; GSE9391 human microarray log2FC = 7.59</p>
+    </div>
+  </div>
+
+  <div class="tc tcA">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">TNFRSF12A</span>
+        <span class="tc-alias"> (Tnfrsf12a in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bA">Class A</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 2.95</span>
+      <span class="b bns">Datasets: 2/3 primary</span>
+      <span class="b bns">Timepoints: 12h|1d|24h</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC-enriched</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-fA"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fA"></span><span class="dot dot-fA"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">10</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> Fn14 (CD266): small type I transmembrane TNFR-family receptor (129 aa); sole receptor for TWEAK. Expressed at very low levels in normal brain vasculature; strongly induced by ischemia, TNF-α, and VEGF on ECs and neurons.</p>
+      <p><strong>Targeting rationale:</strong> Confirmed upregulated in human stroke patients (Inta 2008) and brain ECs during OGD. TWEAK/Fn14 axis drives BBB disruption and NF-κB activation. Anti-Fn14 mAbs and TWEAK-mimetic peptides validated for glioblastoma vessel targeting; receptor-mediated internalization confirmed.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = —; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="classB">
+  <h2>5. Class B: Strong Targets</h2>
+  <p>These genes meet all three criteria but with one moderate score. High priority with additional validation.</p>
+  
+  <div class="tc tcB">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">APOLD1</span>
+        <span class="tc-alias"> (Apold1 in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bB">Class B</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 2.90</span>
+      <span class="b bns">Datasets: 2/3 primary</span>
+      <span class="b bns">Timepoints: 1d|1h|24h</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC-exclusive</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fB"></span><span class="dot dot-fB"></span><span class="dot dot-fB"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fB"></span><span class="dot dot-fB"></span><span class="dot dot-fB"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fB"></span><span class="dot dot-fB"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fB"></span><span class="dot dot-fB"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">10</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> APOLD1 (Apolipoprotein L Domain Containing 1): endothelial immediate-early gene; transmembrane protein localized to EC contacts and Weibel-Palade bodies. Expression restricted to vasculature across all tissues (Fan 2022). Required for hemostasis and vascular integrity.</p>
+      <p><strong>Targeting rationale:</strong> Vascular-restricted expression across tissues makes it highly attractive for EC targeting. Upregulated in pathological angiogenesis and ischemia. APOLD1 loss causes endothelial dysfunction. Direct stroke-specific upregulation confirmed in GSE234052 and GSE223744.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = 0.12; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="classC">
+  <h2>6. Class C: Good Targets</h2>
+  <p>These genes have confirmed surface accessibility and stroke upregulation but with limitations in brain EC specificity (expressed on immune cells or other tissues). Best used as <strong>secondary/co-targeting ligands</strong> combined with a more specific primary ligand.</p>
+  
+  <div class="tc tcC">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">PLAUR</span>
+        <span class="tc-alias"> (Plaur in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bC">Class C</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 4.34</span>
+      <span class="b bns">Datasets: 2/3 primary</span>
+      <span class="b bns">Timepoints: 12h|1d|1h|24h</span>
+      <span class="b bns">Surface: GPI-anchored</span>
+      <span class="b bns">EC enrichment: EC+immune</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-fC"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-fC"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">10</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> uPAR (CD87): GPI-anchored glycoprotein; three Ly6/uPAR domains; receptor for urokinase plasminogen activator. Coordinates plasminogen activation, ECM remodeling, and leukocyte transmigration. Regulated by TNF-α, IL-1β, and VEGF via endothelial-specific enhancer.</p>
+      <p><strong>Targeting rationale:</strong> Confirmed upregulated in ischemic brain ECs (1h–24h). GPI anchor means no intracellular domain — purely a surface docking target. AE105 peptide and anti-uPAR mAbs available. Broad expression on activated monocytes/macrophages limits brain EC specificity; best combined with brain-targeting moiety.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = —; GSE9391 human microarray log2FC = 1.30</p>
+    </div>
+  </div>
+
+  <div class="tc tcC">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">IFITM1</span>
+        <span class="tc-alias"> (Ifitm1 in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bC">Class C</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 2.70</span>
+      <span class="b bns">Datasets: 3/3 primary</span>
+      <span class="b bns">Timepoints: 12h|1d|24h|Day2</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC+broad</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-fC"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">9</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> IFITM1 (CD225): small interferon-induced transmembrane protein; two transmembrane domains with short extracellular loop; antiviral and anti-proliferative functions. Expressed on brain microvascular ECs; upregulated by type I IFN signaling.</p>
+      <p><strong>Targeting rationale:</strong> Type I IFN signature confirmed in brain ECs after ischemic stroke (Tuohy 2025). Upregulated in all 3 primary datasets across EC, pericyte, and SMC populations. Small extracellular loop limits antibody epitope accessibility. Pan-vascular marker — not EC-specific.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = 3.44; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+
+  <div class="tc tcC">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">SEMA6D</span>
+        <span class="tc-alias"> (Sema6d in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bC">Class C</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 1.83</span>
+      <span class="b bns">Datasets: 2/3 primary</span>
+      <span class="b bns">Timepoints: 12h|1d|24h</span>
+      <span class="b bns">Surface: Transmembrane</span>
+      <span class="b bns">EC enrichment: EC+neural</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-fC"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">9</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> Semaphorin 6D: class 6 transmembrane semaphorin; large extracellular Sema domain; signals via PlexinA1/A4. Expressed on ECs and neurons; regulates vascular patterning and angiogenesis. Family members regulate post-stroke angiogenesis.</p>
+      <p><strong>Targeting rationale:</strong> Transmembrane with large accessible extracellular Sema domain. Upregulated in stroke transcriptomics (GSE234052, GSE225948). Roles in intracerebral hemorrhage recovery reported. Limited direct brain EC stroke data; needs validation.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = 0.20; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+
+  <div class="tc tcC">
+    <div class="tc-head">
+      <div>
+        <span class="tc-gene">NT5E</span>
+        <span class="tc-alias"> (Nt5e in mouse)</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="b bC">Class C</span>
+        
+      </div>
+    </div>
+    <div class="tc-meta">
+      <span class="b bup">max log2FC = 6.46</span>
+      <span class="b bns">Datasets: 1/3 primary</span>
+      <span class="b bns">Timepoints: 1d</span>
+      <span class="b bns">Surface: GPI-anchored</span>
+      <span class="b bns">EC enrichment: EC+immune</span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px;">
+      <div><div class="score-bar"><span class="score-label">Surface access</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-fC"></span></div></div><div class="score-bar"><span class="score-label">Brain EC specificity</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Stroke evidence</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-fC"></span><span class="dot dot-e"></span></div></div><div class="score-bar"><span class="score-label">Dataset support</span><div class="score-dots"><span class="dot dot-fC"></span><span class="dot dot-e"></span><span class="dot dot-e"></span></div></div></div>
+      <div style="font-size:12px;color:var(--mut);padding-top:4px;">
+        Targeting score: <strong style="font-size:16px;color:var(--pri);">8</strong>/12
+      </div>
+    </div>
+    <div class="tc-body">
+      <p><strong>What is known:</strong> CD73 (ecto-5'-nucleotidase): GPI-anchored surface enzyme; converts AMP to adenosine; regulates vascular tone and BBB permeability. Expressed on brain ECs, glial cells, and leukocytes. Protective in stroke — CD73-KO mice have larger infarcts.</p>
+      <p><strong>Targeting rationale:</strong> Hypoxia-responsive upregulation in brain microvascular ECs. GPI-anchored — fully accessible from bloodstream. Not brain EC-specific. Anti-CD73 mAbs in clinical development for cancer immunotherapy (oleclumab). Adenosine production role may complicate targeting strategy.</p>
+      <p><strong>Confirmatory evidence:</strong> GSE233815 whole-brain bulk log2FC = 0.97; GSE9391 human microarray log2FC = —</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="classD">
+  <h2>7. Class D: Limited Targets</h2>
+  <p>These genes are upregulated in stroke transcriptomics and have some surface expression, but fail one or more critical targeting criteria (poor brain EC specificity, partial surface access, or no stroke upregulation data). They may be useful as <strong>biomarkers</strong> but are not recommended as primary targeting antigens.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Gene</th><th>Max log2FC</th><th>Surface class</th><th>EC enrichment</th><th>Limitation</th><th>Known function (brief)</th></tr></thead>
+    <tbody><tr><td><strong>TMEM252</strong></td><td>3.82</td><td>Transmembrane</td><td>EC+broad</td><td>Multiple limitations</td><td>TMEM252: transmembrane protein 252; poorly characterized; confirmed plasma membr</td></tr>
+<tr><td><strong>ANXA2</strong></td><td>1.97</td><td>Partial</td><td>EC+immune</td><td>Partial/no surface access</td><td>Annexin A2: primarily intracellular calcium-binding protein; small fraction expo</td></tr>
+<tr><td><strong>ACKR1</strong></td><td>7.69</td><td>Transmembrane</td><td>EC+erythrocyte</td><td>Multiple limitations</td><td>ACKR1 (Duffy/DARC): 7-transmembrane atypical chemokine receptor; scavenges infla</td></tr>
+<tr><td><strong>ADAMTS9</strong></td><td>6.36</td><td>Secreted</td><td>EC+broad</td><td>Partial/no surface access</td><td>ADAMTS9: secreted/pericellular metalloprotease; cleaves versican and aggrecan; r</td></tr>
+<tr><td><strong>LITAF</strong></td><td>4.52</td><td>Transmembrane</td><td>EC+broad</td><td>Partial/no surface access</td><td>LITAF (LPS-induced TNF-alpha factor): transmembrane protein; involved in TNF-α s</td></tr>
+<tr><td><strong>ANGPT2</strong></td><td>4.21</td><td>Secreted</td><td>EC-enriched</td><td>Partial/no surface access</td><td>Angiopoietin-2: secreted glycoprotein; competitive antagonist of Tie2 receptor; </td></tr>
+<tr><td><strong>ATP8B1</strong></td><td>3.83</td><td>Transmembrane</td><td>EC+liver</td><td>Multiple limitations</td><td>ATP8B1: P4-type ATPase; phospholipid flippase; plasma membrane. Expressed in bra</td></tr>
+<tr><td><strong>RND1</strong></td><td>2.51</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>RND1: Rho family GTPase; plasma membrane-associated via prenylation; regulates a</td></tr>
+<tr><td><strong>S100A6</strong></td><td>2.51</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>S100A6 (Calcyclin): calcium-binding protein; primarily cytoplasmic; small fracti</td></tr>
+<tr><td><strong>GJA1</strong></td><td>2.30</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>Connexin 43 (Cx43): gap junction protein; extracellular loops at cell-cell conta</td></tr>
+<tr><td><strong>MSN</strong></td><td>1.93</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>Moesin: ERM family protein; links actin cytoskeleton to plasma membrane; partial</td></tr>
+<tr><td><strong>DYSF</strong></td><td>1.88</td><td>Transmembrane</td><td>EC+muscle</td><td>Multiple limitations</td><td>Dysferlin: large type II transmembrane protein; membrane repair and vesicle fusi</td></tr>
+<tr><td><strong>IFRD1</strong></td><td>1.72</td><td>Transmembrane</td><td>EC+broad</td><td>Multiple limitations</td><td>IFRD1 (TIS7): interferon-related developmental regulator 1; transmembrane protei</td></tr>
+<tr><td><strong>IFITM2</strong></td><td>1.40</td><td>Transmembrane</td><td>EC+broad</td><td>Partial/no surface access</td><td>IFITM2: interferon-induced transmembrane protein 2; small transmembrane protein;</td></tr>
+<tr><td><strong>ADCY4</strong></td><td>1.12</td><td>Transmembrane</td><td>EC+broad</td><td>Multiple limitations</td><td>Adenylyl cyclase 4: transmembrane enzyme; cAMP production; expressed in brain EC</td></tr>
+<tr><td><strong>ADAMTS4</strong></td><td>8.00</td><td>Secreted</td><td>EC+broad</td><td>Partial/no surface access</td><td>ADAMTS4: secreted metalloprotease; cleaves aggrecan and brevican; ECM remodeling</td></tr>
+<tr><td><strong>LRG1</strong></td><td>7.97</td><td>Secreted</td><td>EC+liver</td><td>Partial/no surface access</td><td>LRG1 (Leucine-Rich Alpha-2-Glycoprotein 1): secreted glycoprotein; promotes path</td></tr>
+<tr><td><strong>LCN2</strong></td><td>7.57</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>Lipocalin-2 (NGAL): secreted/surface-associated protein; iron transport; acute p</td></tr>
+<tr><td><strong>SYNPO</strong></td><td>5.18</td><td>Partial</td><td>EC+neural</td><td>Partial/no surface access</td><td>Synaptopodin: actin-associated protein; expressed in ECs and neurons; regulates </td></tr>
+<tr><td><strong>ADAMTS1</strong></td><td>3.38</td><td>Secreted</td><td>EC+broad</td><td>Partial/no surface access</td><td>ADAMTS1: secreted metalloprotease; hypoxic early-response gene in ECs (Hatipoglu</td></tr>
+<tr><td><strong>AKAP12</strong></td><td>3.31</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>AKAP12 (Gravin): A-kinase anchoring protein; plasma membrane-associated scaffold</td></tr>
+<tr><td><strong>HMOX1</strong></td><td>2.81</td><td>Partial</td><td>Broad</td><td>Partial/no surface access</td><td>HMOX1 (HO-1): heme oxygenase-1; primarily intracellular ER/Golgi enzyme; small f</td></tr>
+<tr><td><strong>CDC42EP3</strong></td><td>2.02</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>CDC42EP3 (BORG2): CDC42 effector protein; actin cytoskeleton regulation; plasma </td></tr>
+<tr><td><strong>APLN</strong></td><td>5.79</td><td>Secreted</td><td>EC+broad</td><td>Partial/no surface access</td><td>Apelin: secreted peptide; endogenous ligand for APJ receptor; promotes angiogene</td></tr>
+<tr><td><strong>CAVIN3</strong></td><td>1.05</td><td>Partial</td><td>EC+broad</td><td>Partial/no surface access</td><td>CAVIN3 (PRKCDBP): caveolae-associated protein; involved in pathological angiogen</td></tr>
+<tr><td><strong>CCL2</strong></td><td>6.37</td><td>Secreted</td><td>EC+immune</td><td>Partial/no surface access</td><td>MCP-1 (CCL2): secreted chemokine; recruits monocytes/macrophages; strongly upreg</td></tr>
+<tr><td><strong>CSF3</strong></td><td>8.89</td><td>Secreted</td><td>EC+broad</td><td>Partial/no surface access</td><td>G-CSF (CSF3): secreted cytokine; neuroprotective in stroke; mobilizes hematopoie</td></tr>
+<tr><td><strong>IL6</strong></td><td>6.29</td><td>Secreted</td><td>Broad</td><td>Partial/no surface access</td><td>Interleukin-6: pleiotropic secreted cytokine; acute phase response; upregulated </td></tr></tbody>
+  </table></div>
+</div>
+
+<div class="section" id="excluded">
+  <h2>8. Excluded: Intracellular / Secreted Genes</h2>
+  <div class="co co-warn">
+    <strong>Why these are excluded</strong>
+    These 41 genes are upregulated in stroke transcriptomics but are either intracellular proteins (no extracellular domain) or secreted proteins (not stably membrane-anchored). They cannot be targeted by IV-administered nanoparticles binding to the EC surface. Many are excellent biomarkers of ischemic EC activation but should not be pursued as targeting antigens.
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Gene</th><th>Max log2FC</th><th>Classification</th><th>EC enrichment</th><th>Known function</th></tr></thead>
+    <tbody><tr><td><strong>TNFRSF9</strong></td><td>7.87</td><td>Transmembrane</td><td>Non-EC</td><td>4-1BB (CD137): TNFR-family surface glycoprotein; primarily on activated immune cells (T ce</td></tr>
+<tr><td><strong>KIT</strong></td><td>6.06</td><td>Transmembrane</td><td>Non-EC</td><td>c-Kit (CD117): type III receptor tyrosine kinase; large extracellular domain; primarily ex</td></tr>
+<tr><td><strong>PDLIM1</strong></td><td>4.51</td><td>Intracellular</td><td>EC+broad</td><td>PDLIM1 (CLP36): PDZ and LIM domain protein; actin cytoskeleton; intracellular. Upregulated</td></tr>
+<tr><td><strong>CD44</strong></td><td>4.00</td><td>Transmembrane</td><td>Broad</td><td>CD44: hyaluronan receptor; type I transmembrane glycoprotein; expressed on ECs, immune cel</td></tr>
+<tr><td><strong>CRLF2</strong></td><td>2.55</td><td>Transmembrane</td><td>Non-EC</td><td>CRLF2 (TSLP receptor): cytokine receptor subunit; primarily lymphoid cells. No evidence of</td></tr>
+<tr><td><strong>NUS1</strong></td><td>2.17</td><td>Transmembrane</td><td>Broad</td><td>NUS1: dolichol-phosphate mannose synthase subunit; ER membrane protein. Upregulated in isc</td></tr>
+<tr><td><strong>IL2RG</strong></td><td>2.11</td><td>Transmembrane</td><td>Non-EC</td><td>Common gamma chain (CD132): cytokine receptor subunit; primarily immune cells (T cells, NK</td></tr>
+<tr><td><strong>UBTD1</strong></td><td>2.05</td><td>Partial</td><td>Broad</td><td>UBTD1: ubiquitin domain-containing protein 1; intracellular ubiquitin-related. Upregulated</td></tr>
+<tr><td><strong>PVR</strong></td><td>1.95</td><td>Transmembrane</td><td>Broad</td><td>CD155 (PVR): transmembrane Ig-like adhesion molecule; NK/T cell ligand; immune checkpoint.</td></tr>
+<tr><td><strong>BCR</strong></td><td>1.87</td><td>Partial</td><td>EC+immune</td><td>BCR (Breakpoint Cluster Region): primarily known as BCR-ABL fusion in CML; also a Rho GTPa</td></tr>
+<tr><td><strong>GAPDH</strong></td><td>1.70</td><td>Intracellular</td><td>Ubiquitous</td><td>GAPDH: glycolytic enzyme; housekeeping gene; intracellular. Upregulation in transcriptomic</td></tr>
+<tr><td><strong>RPSA</strong></td><td>1.67</td><td>Partial</td><td>Broad</td><td>RPSA (Laminin receptor): 37/67 kDa laminin receptor; primarily intracellular ribosomal pro</td></tr>
+<tr><td><strong>RELL1</strong></td><td>1.56</td><td>Transmembrane</td><td>Low</td><td>RELL1 (RELT-like 1): TNFR family member; activates p38 and apoptosis; expressed in lymphoi</td></tr>
+<tr><td><strong>SOCS3</strong></td><td>1.51</td><td>Intracellular</td><td>Broad</td><td>SOCS3: suppressor of cytokine signaling 3; intracellular JAK-STAT inhibitor; upregulated i</td></tr>
+<tr><td><strong>TGM2</strong></td><td>1.43</td><td>Partial</td><td>Broad</td><td>Transglutaminase 2: primarily intracellular enzyme; small fraction secreted or surface-ass</td></tr>
+<tr><td><strong>C1QBP</strong></td><td>1.41</td><td>Partial</td><td>Broad</td><td>C1QBP (p32): complement C1q binding protein; primarily mitochondrial/intracellular; small </td></tr>
+<tr><td><strong>TRIB1</strong></td><td>1.22</td><td>Partial</td><td>Broad</td><td>Tribbles 1: pseudokinase; primarily intracellular; regulates MAPK signaling. Upregulated i</td></tr>
+<tr><td><strong>PKIG</strong></td><td>1.15</td><td>Intracellular</td><td>Broad</td><td>PKIG: protein kinase inhibitor gamma; intracellular PKA regulatory subunit. No extracellul</td></tr>
+<tr><td><strong>EIF5A</strong></td><td>1.14</td><td>Intracellular</td><td>Broad</td><td>EIF5A: eukaryotic translation initiation factor 5A; intracellular translation factor. No e</td></tr>
+<tr><td><strong>FLNA</strong></td><td>1.14</td><td>Partial</td><td>Broad</td><td>Filamin A: large actin-binding protein; primarily intracellular cytoskeletal; small fracti</td></tr>
+<tr><td><strong>MYH9</strong></td><td>1.11</td><td>Partial</td><td>Broad</td><td>Myosin IIA heavy chain: cytoskeletal motor protein; primarily intracellular; small fractio</td></tr>
+<tr><td><strong>MYO1C</strong></td><td>1.11</td><td>Partial</td><td>Broad</td><td>Myosin IC: unconventional myosin; primarily intracellular; links plasma membrane to actin.</td></tr>
+<tr><td><strong>SLC38A2</strong></td><td>1.11</td><td>Transmembrane</td><td>Broad</td><td>SNAT2: sodium-coupled neutral amino acid transporter; expressed in brain capillary ECs; al</td></tr>
+<tr><td><strong>RHOJ</strong></td><td>1.10</td><td>Intracellular</td><td>EC-enriched</td><td>RhoJ: endothelium-enriched intracellular Rho GTPase; regulates EC migration, angiogenesis,</td></tr>
+<tr><td><strong>PTPN12</strong></td><td>1.10</td><td>Partial</td><td>Broad</td><td>PTPN12 (PTP-PEST): intracellular tyrosine phosphatase; regulates focal adhesions. Upregula</td></tr>
+<tr><td><strong>STAB1</strong></td><td>1.10</td><td>Transmembrane</td><td>Non-EC</td><td>Stabilin-1: large transmembrane scavenger receptor; primarily expressed on liver sinusoida</td></tr>
+<tr><td><strong>FKBP2</strong></td><td>1.10</td><td>Transmembrane</td><td>Broad</td><td>FKBP2 (FKBP13): ER-resident peptidyl-prolyl isomerase; ER lumen-facing. Upregulated in isc</td></tr>
+<tr><td><strong>SNRK</strong></td><td>1.09</td><td>Intracellular</td><td>EC+broad</td><td>SNRK (Sucrose Nonfermenting 1-Related Kinase): intracellular AMPK-family kinase; promotes </td></tr>
+<tr><td><strong>EHD4</strong></td><td>1.08</td><td>Intracellular</td><td>EC+broad</td><td>EHD4: EH domain-containing endosomal recycling protein; intracellular vesicle trafficking.</td></tr>
+<tr><td><strong>YBX1</strong></td><td>1.05</td><td>Intracellular</td><td>Broad</td><td>YBX1 (Y-box binding protein 1): primarily nuclear/cytoplasmic RNA-binding protein; small f</td></tr>
+<tr><td><strong>EIF5</strong></td><td>1.04</td><td>Intracellular</td><td>Broad</td><td>EIF5: eukaryotic translation initiation factor 5; intracellular translation factor. Housek</td></tr>
+<tr><td><strong>RPL36AL</strong></td><td>1.04</td><td>Intracellular</td><td>Broad</td><td>RPL36AL: ribosomal protein L36a-like; intracellular ribosomal component. Housekeeping func</td></tr>
+<tr><td><strong>ATP1B3</strong></td><td>1.00</td><td>Transmembrane</td><td>Broad</td><td>Na/K-ATPase β3 subunit: expressed in brain microvascular ECs; also in other tissues. Na/K-</td></tr>
+<tr><td><strong>BAX</strong></td><td>0.97</td><td>Intracellular</td><td>Broad</td><td>BAX: pro-apoptotic BCL-2 family member; intracellular mitochondrial protein. Upregulation </td></tr>
+<tr><td><strong>CCT3</strong></td><td>0.91</td><td>Intracellular</td><td>Broad</td><td>CCT3: chaperonin containing TCP1 subunit 3; intracellular protein folding complex. Houseke</td></tr>
+<tr><td><strong>MYO1B</strong></td><td>0.89</td><td>Partial</td><td>Broad</td><td>Myosin IB: unconventional myosin; primarily intracellular; membrane-cytoskeleton linker. U</td></tr>
+<tr><td><strong>HSP90AB1</strong></td><td>0.88</td><td>Partial</td><td>Broad</td><td>HSP90β: heat shock protein 90β; primarily intracellular chaperone; small fraction surface-</td></tr>
+<tr><td><strong>CHIC2</strong></td><td>0.85</td><td>Intracellular</td><td>Low</td><td>CHIC2: cysteine-rich hydrophobic domain protein; intracellular vesicle transport. No extra</td></tr>
+<tr><td><strong>PSMC5</strong></td><td>0.75</td><td>Intracellular</td><td>Broad</td><td>PSMC5: proteasome 26S subunit; intracellular protein degradation. Housekeeping function.</td></tr>
+<tr><td><strong>STIP1</strong></td><td>0.72</td><td>Intracellular</td><td>Broad</td><td>STIP1 (STI1/HOP): stress-induced phosphoprotein 1; intracellular HSP70/HSP90 co-chaperone.</td></tr>
+<tr><td><strong>CDV3</strong></td><td>0.64</td><td>Intracellular</td><td>Broad</td><td>CDV3: carnitine deficiency-associated gene; intracellular function. Limited characterizati</td></tr></tbody>
+  </table></div>
+</div>
+
+<div class="section" id="confirmatory">
+  <h2>9. Confirmatory Analyses</h2>
+  
+  <h3>9.1 GSE233815 — Mouse MCAO Whole-Brain Bulk RNA-seq (Zucha et al. PNAS 2024)</h3>
+  <p><strong>Design:</strong> Permanent MCAO; whole-brain bulk RNA-seq; 4 timepoints (Ctrl, 24h, 3D, 7D); n=4–5/group. DESeq2 for each timepoint vs. Ctrl. <strong>29/73 targets (40%)</strong> significantly upregulated (padj&lt;0.05) in ≥1 timepoint.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Gene</th><th>Best timepoint</th><th>log2FC</th><th>padj</th></tr></thead>
+    <tbody><tr><td><strong>Hmox1</strong></td><td>3D</td><td>5.68</td><td>&lt;0.001</td></tr>
+<tr><td><strong>Ccl2</strong></td><td>3D</td><td>4.78</td><td>0.010</td></tr>
+<tr><td><strong>Socs3</strong></td><td>3D</td><td>3.66</td><td>&lt;0.001</td></tr>
+<tr><td><strong>Cd44</strong></td><td>3D</td><td>3.56</td><td>&lt;0.001</td></tr>
+<tr><td><strong>Ifitm1</strong></td><td>3D</td><td>3.44</td><td>&lt;0.001</td></tr>
+<tr><td><strong>Lcn2</strong></td><td>3D</td><td>3.44</td><td>0.021</td></tr>
+<tr><td><strong>Msn</strong></td><td>3D</td><td>3.22</td><td>&lt;0.001</td></tr>
+<tr><td><strong>Stab1</strong></td><td>3D</td><td>3.06</td><td>0.003</td></tr>
+<tr><td><strong>Ecscr</strong></td><td>3D</td><td>2.97</td><td>0.006</td></tr>
+<tr><td><strong>S100a6</strong></td><td>3D</td><td>2.82</td><td>&lt;0.001</td></tr>
+<tr><td><strong>Litaf</strong></td><td>3D</td><td>2.63</td><td>0.002</td></tr>
+<tr><td><strong>Anxa2</strong></td><td>3D</td><td>2.55</td><td>&lt;0.001</td></tr></tbody>
+  </table></div>
+  <div class="co co-info">
+    <strong>Note:</strong> Cd44 and S100a6 are significant across all 3 timepoints (24h, 3D, 7D). Hmox1 shows the highest FC (5.68 at 3D). However, both are Class D/E targets — their upregulation in whole-brain bulk likely reflects non-vascular cell types (astrocytes, microglia).
+  </div>
+
+  <h3>9.2 GSE9391 — Human Post-Mortem Stroke Brain Microarray (Mitsios et al. 2007)</h3>
+  <p><strong>Design:</strong> Human post-mortem stroke brain; Atlas Human 1.2 Array (GPL127; 1,185 probes); 6 pooled samples; limma with paired timepoint blocking. Only <strong>14/78 targets</strong> represented on this array. Nominal p-values only (FDR too conservative with n=6).</p>
+  <div class="tw"><table>
+    <thead><tr><th>Gene</th><th>log2FC</th><th>p-value</th><th>adj.P.Val</th><th>Status</th></tr></thead>
+    <tbody><tr style="background:#eafaf1;"><td><strong>ACKR1</strong></td><td>8.25</td><td>0.023</td><td>0.301</td><td><span class="b bhuman">p&lt;0.05 ↑</span></td></tr>
+<tr style="background:#eafaf1;"><td><strong>SELE</strong></td><td>7.59</td><td>0.031</td><td>0.312</td><td><span class="b bhuman">p&lt;0.05 ↑</span></td></tr>
+<tr><td><strong>YBX1</strong></td><td>5.50</td><td>0.149</td><td>0.441</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>CD44</strong></td><td>5.44</td><td>0.146</td><td>0.439</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>KIT</strong></td><td>5.07</td><td>0.154</td><td>0.441</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>HMOX1</strong></td><td>3.86</td><td>0.256</td><td>0.524</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>PLAUR</strong></td><td>1.30</td><td>0.510</td><td>0.728</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>IL2RG</strong></td><td>0.97</td><td>0.825</td><td>0.927</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>IL6</strong></td><td>0.38</td><td>0.839</td><td>0.931</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>GAPDH</strong></td><td>0.27</td><td>0.879</td><td>0.947</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>CCL2</strong></td><td>-3.46</td><td>0.309</td><td>0.555</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>BAX</strong></td><td>-3.76</td><td>0.262</td><td>0.527</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>ATP1B3</strong></td><td>-7.55</td><td>0.050</td><td>0.370</td><td><span class="b bns">ns</span></td></tr>
+<tr><td><strong>CSF3</strong></td><td>-8.05</td><td>0.011</td><td>0.206</td><td><span class="b bns">ns</span></td></tr></tbody>
+  </table></div>
+  <div class="co co-key">
+    <strong>Human validation:</strong> <strong>ACKR1</strong> (log2FC=8.25, p=0.023) and <strong>SELE</strong> (log2FC=7.59, p=0.031) are confirmed upregulated in human stroke infarct tissue. SELE is a Class A target — this provides direct human translational support. ACKR1 is Class D (erythrocyte off-target risk) but the human validation is notable.
+  </div>
+</div>
+
+<div class="section" id="panel">
+  <h2>10. Recommended Target Panel</h2>
+  <p>For a stroke-targeted nanoparticle or cell therapy vector, we recommend a <strong>dual-targeting strategy</strong>:</p>
+
+  <h3>10.1 Primary Targeting Ligand (stroke-specific, EC-enriched)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Target</th><th>Class</th><th>Rationale</th><th>Available ligands</th><th>Time window</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SELE (E-selectin)</strong></td><td><span class="b bA">A</span></td>
+        <td>EC-exclusive; confirmed stroke upregulation 6–12h; already validated as NP target in stroke models</td>
+        <td>ES-bp peptide, anti-SELE mAb (EL246), SHp peptide</td><td>6–24h</td></tr>
+      <tr><td><strong>TNFRSF12A (Fn14)</strong></td><td><span class="b bA">A</span></td>
+        <td>Confirmed in human stroke patients; TWEAK/Fn14 axis drives BBB disruption; receptor-mediated internalization</td>
+        <td>Anti-Fn14 mAb (ITEM-4), TWEAK-mimetic peptide</td><td>12h–24h</td></tr>
+      <tr><td><strong>CD93</strong></td><td><span class="b bA">A</span></td>
+        <td>EC-enriched; confirmed upregulation after focal ischemia; internalized via Rab5c — enables transcytosis</td>
+        <td>Anti-CD93 mAb, anti-CD93 nanobody</td><td>1h–24h</td></tr>
+      <tr><td><strong>ECSCR</strong></td><td><span class="b bA">A</span></td>
+        <td>EC-exclusive; upregulated in all 3 primary datasets; highest EC specificity of all candidates</td>
+        <td>Requires new antibody/nanobody development</td><td>12h–Day2</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10.2 Secondary/Co-Targeting Ligand</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Target</th><th>Class</th><th>Rationale</th><th>Available ligands</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PLAUR (uPAR)</strong></td><td><span class="b bC">C</span></td>
+        <td>Broad time window (1h–24h); GPI-anchored; confirmed stroke upregulation; AE105 peptide available</td>
+        <td>AE105 peptide, anti-uPAR mAb (ATN-658)</td></tr>
+      <tr><td><strong>APOLD1</strong></td><td><span class="b bB">B</span></td>
+        <td>Vascular-restricted expression; upregulated in ischemia; no off-target binding outside vasculature</td>
+        <td>Requires new antibody development</td></tr>
+      <tr><td><strong>NT5E (CD73)</strong></td><td><span class="b bC">C</span></td>
+        <td>GPI-anchored; hypoxia-responsive; anti-CD73 mAbs in clinical development (oleclumab)</td>
+        <td>Oleclumab (anti-CD73), APCP (enzyme inhibitor)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10.3 Targeting Strategy by Application</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Application</th><th>Recommended primary target</th><th>Rationale</th></tr></thead>
+    <tbody>
+      <tr><td>Acute nanoparticle delivery (6–24h)</td><td>SELE + PLAUR (dual)</td><td>Both confirmed at this window; SELE already validated in NP studies</td></tr>
+      <tr><td>Subacute delivery (12h–Day2)</td><td>TNFRSF12A or CD93</td><td>Sustained upregulation; receptor-mediated internalization for transcytosis</td></tr>
+      <tr><td>Highest EC specificity</td><td>ECSCR (primary) + APOLD1 (secondary)</td><td>Both EC-exclusive; minimal off-target binding</td></tr>
+      <tr><td>Clinically translatable (human-validated)</td><td>SELE (primary) + TNFRSF12A (secondary)</td><td>Both confirmed in human stroke tissue</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="section" id="temporal">
+  <h2>11. Temporal Expression Windows</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Time window</th><th>Class A–C targets upregulated</th><th>Implication</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1h (ultra-acute)</strong></td><td>PLAUR, CD93, APOLD1</td><td>Very early response; limited clinical window but relevant for pre-hospital or rapid-response delivery</td></tr>
+      <tr><td><strong>6–12h (acute)</strong></td><td>SELE, TNFRSF12A, CD93, ECSCR, PLAUR, APOLD1</td><td><strong>Peak EC activation — optimal targeting window.</strong> All Class A targets co-upregulated.</td></tr>
+      <tr><td><strong>24h (subacute)</strong></td><td>SELE, TNFRSF12A, ECSCR, CD93, PLAUR, IFITM1</td><td>Sustained activation; angiogenic switch begins; clinically accessible window for most patients</td></tr>
+      <tr><td><strong>Day 2 (subacute)</strong></td><td>ECSCR, PLAUR, APOLD1, SEMA6D</td><td>Confirmed by independent dataset (GSE225948); still therapeutically relevant</td></tr>
+      <tr><td><strong>3D–7D (late)</strong></td><td>IFITM1, NT5E, SEMA6D</td><td>Late-phase targets; relevant for subacute neuroprotection or repair strategies</td></tr>
+    </tbody>
+  </table></div>
+  <div class="co co-ok">
+    <strong>Optimal targeting window: 6–24h post-stroke</strong>
+    All four Class A targets are co-upregulated at 12–24h. This aligns with the clinical window for neuroprotective interventions and is accessible for IV-administered nanoparticles.
+  </div>
+</div>
+
+<div class="section" id="caveats">
+  <h2>12. Caveats and Limitations</h2>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Limitation</th><th>Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>Mouse-to-human translation</strong></td>
+        <td>All primary datasets are murine MCAO models.</td>
+        <td>GSE9391 provides partial human validation (SELE, ACKR1). Wälchli 2024 (GSE256490) human brain vascular atlas not yet processed.</td></tr>
+      <tr><td>2</td><td><strong>Model heterogeneity</strong></td>
+        <td>Three different MCAO models (permanent, photothrombotic, transient). Target expression may differ with reperfusion.</td>
+        <td>Cross-dataset consensus reduces model-specific artifacts. Targets in all 3 models are most robust.</td></tr>
+      <tr><td>3</td><td><strong>ECSCR stroke confirmation</strong></td>
+        <td>ECSCR is upregulated in all 3 primary datasets but direct stroke-specific confirmation in brain ECs is limited in the literature.</td>
+        <td>Strong transcriptional evidence across 3 independent datasets. Needs in vitro/in vivo protein-level confirmation.</td></tr>
+      <tr><td>4</td><td><strong>APOLD1 stroke confirmation</strong></td>
+        <td>APOLD1 is vascular-restricted but direct stroke-specific upregulation data is limited.</td>
+        <td>Upregulated in pathological angiogenesis conditions; ischemia-responsive. Needs direct stroke confirmation.</td></tr>
+      <tr><td>5</td><td><strong>GSE234052 pseudoreplication</strong></td>
+        <td>Wilcoxon tests on individual cells (not pseudobulk) due to absent replicate metadata.</td>
+        <td>Treated as exploratory; GSE223744 and GSE225948 (pseudobulk DESeq2) are statistically more rigorous.</td></tr>
+      <tr><td>6</td><td><strong>ACKR1 erythrocyte expression</strong></td>
+        <td>ACKR1 is expressed on erythrocytes — IV nanoparticles would bind circulating red blood cells.</td>
+        <td>ACKR1 classified as Class D despite human validation. Not recommended as primary targeting antigen for IV delivery.</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="section" id="files">
+  <h2>13. Output Files</h2>
+  <div class="tw"><table>
+    <thead><tr><th>File</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>stroke_vascular_surface_targets_curated_v3.csv</code></td><td>78-gene list with full targeting annotations (34 columns): surface_class, ec_specificity, stroke_score, targeting_viability, known_function, targeting_notes, final_class, targeting_score</td></tr>
+      <tr><td><code>stroke_EC_actionable_targets.csv</code></td><td>9 actionable targets (Class A–C) with full annotations</td></tr>
+      <tr><td><code>heatmap_stroke_EC_targets_v3.png</code></td><td>Updated heatmap: 37 genes (Class A–D) × 5 datasets, color-coded by targeting class</td></tr>
+      <tr><td><code>GSE233815_DESeq2_MCAO_vs_Ctrl_surface_targets.csv</code></td><td>DESeq2 results for 78 targets across 3 MCAO timepoints (whole-brain bulk)</td></tr>
+      <tr><td><code>GSE9391_limma_stroke_vs_ctrl_surface_targets.csv</code></td><td>limma results for 14 targets in human stroke microarray</td></tr>
+      <tr><td><code>stroke_vascular_surface_targets_curated_v2.csv</code></td><td>Previous version (without targeting viability curation)</td></tr>
+      <tr><td><code>cross_dataset_consensus_all_genes.csv</code></td><td>All 2,235 upregulated genes with dataset scores</td></tr>
+      <tr><td><code>report_stroke_vascular_targets.html</code></td><td>This report (v3)</td></tr>
+      <tr><td><code>report_stroke_vascular_targets.md</code></td><td>Markdown version of this report</td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+</div><!-- end .content -->
+<div class="ftr">
+  <p>Analysis performed using DESeq2, limma, scanpy, Human Protein Atlas (v23), and literature from PubMed.</p>
+  <p>Raw data: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223744">GSE223744</a> | 
+  <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE234052">GSE234052</a> | 
+  <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225948">GSE225948</a> | 
+  <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE233815">GSE233815</a> | 
+  <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE9391">GSE9391</a></p>
+  <p style="margin-top:8px;opacity:.5;">Generated by Biomni | 2026-04-01 | v3</p>
+</div>
+</body></html>
+

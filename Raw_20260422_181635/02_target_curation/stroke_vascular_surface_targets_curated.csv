@@ -1,0 +1,79 @@
+gene_mouse,gene_human,tier,n_datasets,n_dataset_tp,max_log2FC,min_padj,datasets,cell_types,timepoints,hpa_location,hpa_reliability,notes
+Adamts9,ADAMTS9,2,3,5,6.36,1.9332107925078527e-82,GSE223744|GSE225948|GSE234052,Endothelial,12h|1d|1h|24h|Day2,Endoplasmic reticulum;Vesicles (predicted secreted),Supported,ADAMTS9: secreted/pericellular metalloprotease; NOT confirmed plasma membrane by HPA; strongest transcriptional signal but better as biomarker than targeting antigen
+Litaf,LITAF,2,3,4,4.52,1.3758936184645452e-22,GSE223744|GSE225948|GSE234052,Endothelial|Pericyte,12h|1d|24h|Day2,Nucleoplasm,Supported,
+Pdlim1,PDLIM1,2,3,3,4.51,5.4897522519470834e-08,GSE223744|GSE225948|GSE234052,Endothelial,1d|24h|Day2,Actin filaments,Supported,
+Tmem252,TMEM252,1,3,5,3.82,6.90315171826331e-39,GSE223744|GSE225948|GSE234052,Endothelial,12h|1d|1h|24h|Day2,Nuclear speckles;Plasma membrane,Approved,Transmembrane protein 252; EC surface; function less characterized
+Ecscr,ECSCR,1,3,4,2.85,1.0214790676318167e-38,GSE223744|GSE225948|GSE234052,Endothelial,12h|1d|24h|Day2,Plasma membrane;Vesicles,Supported,EC surface-expressed chemotaxis receptor; EC-specific; angiogenesis
+Ifitm1,IFITM1,1,3,4,2.7,6.9483192136938415e-09,GSE223744|GSE225948|GSE234052,Endothelial|Pericyte|SMC,12h|1d|24h|Day2,Golgi apparatus;Plasma membrane,Approved,IFITM1 (CD225); EC surface; interferon-induced; antiviral; upregulated in all 3 datasets
+Rnd1,RND1,1,3,4,2.51,3.6289757157381393e-13,GSE223744|GSE225948|GSE234052,Endothelial,12h|1d|24h|Day2,Actin filaments;Plasma membrane;Vesicles,Supported,
+S100a6,S100A6,1,3,3,2.51,2.7825283674121403e-26,GSE223744|GSE225948|GSE234052,Endothelial|SMC,1d|24h|Day2,Cytosol;Plasma membrane,Enhanced,
+Anxa2,ANXA2,1,3,3,1.97,6.311241435291864e-23,GSE223744|GSE225948|GSE234052,Endothelial,1d|24h|Day2,Plasma membrane,Approved,
+Msn,MSN,1,3,5,1.93,5.3385768783617074e-18,GSE223744|GSE225948|GSE234052,Endothelial,12h|1d|1h|24h|Day2,Plasma membrane,Enhanced,Moesin; plasma membrane-cytoskeleton linker; EC surface; leukocyte adhesion
+Rpsa,RPSA,1,3,4,1.67,1.5613222566713243e-55,GSE223744|GSE225948|GSE234052,Endothelial|Pericyte|SMC,12h|1d|24h|Day2,Cytosol;Plasma membrane,Supported,
+Ifitm2,IFITM2,1,3,4,1.4,1.85903801454739e-18,GSE223744|GSE225948|GSE234052,Endothelial|Pericyte,12h|1d|24h|Day2,Cell Junctions,Approved,
+Pkig,PKIG,2,3,3,1.15,1.006916929462831e-09,GSE223744|GSE225948|GSE234052,Endothelial,12h|1d|Day2,Cytosol;Nucleoplasm,Approved,
+Eif5a,EIF5A,2,3,3,1.14,4.3453808708135735e-08,GSE223744|GSE225948|GSE234052,Endothelial,1d|24h|Day2,Cytosol,Supported,
+Adamts4,ADAMTS4,1,2,2,8.0,6.007184173961143e-19,GSE223744|GSE234052,Endothelial,1d|24h,Nuclear speckles,Supported,ADAMTS4; secreted metalloprotease; ECM remodeling; upregulated 24h post-stroke
+Lrg1,LRG1,1,2,2,7.97,5.4368179872985735e-177,GSE223744|GSE225948,Endothelial,1d|Day2,Vesicles,Approved,"Secreted glycoprotein, promotes angiogenesis via TGFβ/ALK1; upregulated in ischemic ECs"
+Ackr1,ACKR1,1,2,2,7.69,5.462006767934063e-35,GSE223744|GSE225948,Endothelial,1d|Day2,,,Atypical chemokine receptor (Duffy antigen); EC surface; chemokine scavenger
+Lcn2,LCN2,1,2,2,7.57,5.327082765185692e-56,GSE223744|GSE234052,Endothelial,12h|1d,Endoplasmic reticulum,Supported,Lipocalin-2; secreted; iron transport; stroke-induced; EC surface receptor (megalin)
+Kit,KIT,1,2,3,6.06,4.518934456598169e-07,GSE223744|GSE234052,Endothelial,12h|1d|24h,Plasma membrane,Supported,c-Kit (CD117); RTK; EC surface; stem cell factor receptor; upregulated 12-24h
+Apln,APLN,1,2,2,5.79,5.347211529279072e-16,GSE223744|GSE234052,Endothelial,1d|24h,,,Apelin; secreted peptide; APJ receptor ligand; angiogenesis; upregulated 24h
+Synpo,SYNPO,1,2,3,5.18,1.8059827684337864e-68,GSE223744|GSE234052,Endothelial,12h|1d|24h,Cytosol;Plasma membrane,Approved,
+Plaur,PLAUR,1,2,4,4.34,1.757418196188156e-21,GSE223744|GSE234052,Endothelial,12h|1d|1h|24h,Plasma membrane,Supported,uPAR (CD87); GPI-anchored; EC surface; plasminogen activation; stroke-upregulated
+Angpt2,ANGPT2,1,2,3,4.21,3.196643508079733e-17,GSE223744|GSE234052,Endothelial,12h|1d|24h,,,Angiopoietin-2; secreted; Tie2 antagonist; vascular destabilization post-stroke
+Atp8b1,ATP8B1,1,2,2,3.83,3.1121037600095616e-18,GSE223744|GSE225948,Endothelial,1d|Day2,Cytosol;Plasma membrane,Supported,
+Adamts1,ADAMTS1,1,2,4,3.38,9.130632579990222e-43,GSE223744|GSE234052,Endothelial|Pericyte,12h|1d|1h|24h,Plasma membrane,Uncertain,ADAMTS1; secreted/surface metalloprotease; ECM remodeling; pericyte+EC
+Akap12,AKAP12,1,2,4,3.31,8.452343611145578e-11,GSE223744|GSE234052,Endothelial,12h|1d|1h|24h,Cytosol;Plasma membrane,Enhanced,
+Tnfrsf12a,TNFRSF12A,1,2,3,2.95,6.1553927183940655e-24,GSE223744|GSE234052,Endothelial,12h|1d|24h,Cytosol;Plasma membrane,Approved,TWEAK receptor (Fn14/CD266); EC surface; TNFR superfamily; NF-κB; stroke-induced
+Apold1,APOLD1,1,2,3,2.9,2.605577412243585e-23,GSE223744|GSE234052,Endothelial|Pericyte,1d|1h|24h,Nucleoplasm;Plasma membrane,Supported,Apolipoprotein L domain-containing 1; EC surface; vascular response to hypoxia
+Hmox1,HMOX1,1,2,2,2.81,0.0012051222317671,GSE223744|GSE234052,Endothelial,1d|24h,Golgi apparatus;Plasma membrane,Uncertain,
+Crlf2,CRLF2,1,2,3,2.55,1.2883402992470078e-27,GSE223744|GSE234052,Endothelial,12h|1d|24h,Plasma membrane,Approved,TSLP receptor; EC surface; cytokine signaling
+Gja1,GJA1,1,2,3,2.3,1.4466050001156158e-11,GSE223744|GSE234052,Endothelial,12h|1d|24h,Cell Junctions;Vesicles,Approved,Connexin 43; gap junction; EC/pericyte surface; BBB integrity
+Nus1,NUS1,2,2,3,2.17,1.7862449246506386e-14,GSE223744|GSE234052,Endothelial,12h|1d|24h,Vesicles,Approved,
+Il2rg,IL2RG,1,2,2,2.11,1.6540787058513342e-20,GSE223744|GSE225948,Endothelial,1d|Day2,Plasma membrane,Supported,Common gamma chain (CD132); EC surface; cytokine receptor
+Ubtd1,UBTD1,2,2,2,2.05,3.11915828520061e-10,GSE223744|GSE234052,Endothelial,1d|24h,Vesicles,Approved,
+Cdc42ep3,CDC42EP3,1,2,3,2.02,2.3672595663765083e-14,GSE223744|GSE234052,Endothelial,12h|1d|1h,Actin filaments;Plasma membrane,Supported,
+Pvr,PVR,1,2,3,1.95,1.2863390548367207e-11,GSE223744|GSE234052,Endothelial,12h|1d|24h,Nucleoplasm;Plasma membrane;Vesicles,Supported,CD155 (PVR); EC surface; NK/T cell ligand; immune checkpoint
+Dysf,DYSF,1,2,2,1.88,5.336080535727988e-14,GSE223744|GSE234052,Endothelial,1d|24h,Centriolar satellite;Mid piece;Plasma membrane,Approved,
+Bcr,BCR,1,2,2,1.87,2.7671261917104824e-17,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol;Plasma membrane,Approved,
+Sema6d,SEMA6D,1,2,3,1.83,2.742230303083669e-10,GSE223744|GSE234052,Endothelial,12h|1d|24h,Plasma membrane,Approved,Semaphorin 6D; transmembrane; axon guidance/vascular remodeling
+Ifrd1,IFRD1,1,2,3,1.72,7.769044390523884e-13,GSE223744|GSE234052,Endothelial,12h|1d|24h,Plasma membrane,Approved,
+Gapdh,GAPDH,1,2,3,1.7,8.705316639722546e-37,GSE223744|GSE234052,Endothelial|Pericyte|SMC,12h|1d|24h,Cytosol;Plasma membrane,Enhanced,
+Rell1,RELL1,1,2,3,1.56,5.120760828992613e-09,GSE223744|GSE234052,Endothelial,12h|1d|24h,Microtubules;Plasma membrane,Supported,
+Socs3,SOCS3,2,2,2,1.51,1.1815491280730079e-09,GSE223744|GSE234052,Endothelial,12h|1d,Cytosol,Approved,
+Tgm2,TGM2,2,2,2,1.43,1.818788352507501e-14,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol,Approved,
+C1qbp,C1QBP,1,2,2,1.41,0.0003956157292574,GSE223744|GSE225948,Endothelial,1d|Day2,Plasma membrane,Supported,
+Cd93,CD93,1,2,4,1.31,6.297913462667951e-17,GSE223744|GSE234052,Endothelial,12h|1d|1h|24h,Plasma membrane;Vesicles,Approved,CD93; EC surface glycoprotein; angiogenesis; complement receptor
+Trib1,TRIB1,1,2,2,1.22,1.430742128137616e-05,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol;Plasma membrane,Approved,
+Flna,FLNA,1,2,2,1.14,3.791281389887236e-07,GSE223744|GSE234052,Endothelial,1d|24h,Actin filaments;Cytosol;Plasma membrane,Supported,
+Adcy4,ADCY4,2,2,2,1.12,2.868639444259474e-07,GSE223744|GSE234052,Endothelial,1d|24h,Mitochondria,Approved,
+Myh9,MYH9,1,2,3,1.11,1.792837121733097e-18,GSE223744|GSE234052,Endothelial,1d|1h|24h,Actin filaments;Plasma membrane,Supported,
+Myo1c,MYO1C,1,2,2,1.11,2.4811155229012116e-09,GSE223744|GSE234052,Endothelial,1d|24h,Nuclear bodies;Plasma membrane,Enhanced,
+Slc38a2,SLC38A2,1,2,2,1.11,0.0009724200474698,GSE223744|GSE234052,Endothelial,1d|1h,Plasma membrane,Supported,
+Rhoj,RHOJ,1,2,2,1.1,4.730252595743628e-05,GSE223744|GSE234052,Endothelial,12h|1d,Plasma membrane,Approved,
+Ptpn12,PTPN12,1,2,2,1.1,3.1485269278283148e-06,GSE223744|GSE234052,Endothelial,1d|24h,Plasma membrane,Approved,
+Stab1,STAB1,2,2,2,1.1,1.664416285272037e-05,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol,Approved,
+Fkbp2,FKBP2,1,2,2,1.1,2.4888805691862623e-06,GSE223744|GSE225948,Endothelial,1d|Day2,Plasma membrane,Approved,
+Snrk,SNRK,1,2,2,1.09,0.0003134063615018,GSE223744|GSE234052,Endothelial,1d|1h,Cell Junctions;Plasma membrane;Vesicles,Approved,
+Ehd4,EHD4,1,2,2,1.08,5.206646922604019e-09,GSE223744|GSE234052,Endothelial,1d|24h,Plasma membrane,Uncertain,
+Cavin3,CAVIN3,1,2,2,1.05,1.058279419161231e-07,GSE223744|GSE234052,Endothelial,12h|1d,Plasma membrane,Approved,
+Ybx1,YBX1,2,2,2,1.05,0.0038492054606722,GSE223744|GSE225948,Endothelial,1d|Day2,Cytosol,Supported,
+Eif5,EIF5,2,2,2,1.04,0.0002360260233397,GSE223744|GSE234052,Endothelial|SMC,1d|24h,Cytosol,Approved,
+Rpl36al,RPL36AL,2,2,2,1.04,6.81408481733394e-05,GSE223744|GSE234052,Endothelial|Pericyte,12h|1d,Cytosol;Endoplasmic reticulum,Approved,
+Atp1b3,ATP1B3,1,2,2,1.0,2.0639798273769013e-08,GSE223744|GSE234052,Endothelial,12h|1d,Plasma membrane,Supported,
+Bax,BAX,2,2,3,0.97,1.1479249115367225e-07,GSE223744|GSE234052,Endothelial,12h|1d|24h,Vesicles,Approved,
+Cct3,CCT3,2,2,2,0.91,1.6908477894765962e-06,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol,Approved,
+Myo1b,MYO1B,1,2,2,0.89,2.399050383708335e-05,GSE223744|GSE234052,Endothelial,12h|1d,Plasma membrane,Enhanced,
+Hsp90ab1,HSP90AB1,1,2,2,0.88,8.461477775993211e-40,GSE223744|GSE234052,Endothelial|Pericyte,1d|24h,Plasma membrane,Supported,
+Chic2,CHIC2,1,2,2,0.85,7.156008471165751e-05,GSE223744|GSE234052,Endothelial,12h|1d,Plasma membrane;Vesicles,Enhanced,
+Psmc5,PSMC5,1,2,2,0.75,4.064812722645402e-07,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol;Plasma membrane,Supported,
+Stip1,STIP1,1,2,2,0.72,5.1524025549214765e-05,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol;Plasma membrane,Approved,
+Cdv3,CDV3,2,2,2,0.64,0.0005495877797452,GSE223744|GSE234052,Endothelial,1d|24h,Cytosol,Approved,
+Csf3,CSF3,2,1,1,8.89,2.7049556400618243e-14,GSE223744,Endothelial,1d,,,G-CSF; secreted; EC-derived; neuroprotection; stroke response
+Tnfrsf9,TNFRSF9,2,1,1,7.87,1.432723530640695e-15,GSE223744,Endothelial,1d,Plasma membrane,Approved,4-1BB (CD137); TNFR superfamily; EC surface; T cell costimulation
+Sele,SELE,2,1,1,6.79,1.0036501206632602e-19,GSE223744,Endothelial,1d,,,E-selectin (CD62E); canonical EC activation marker; leukocyte adhesion
+Nt5e,NT5E,2,1,1,6.46,8.927696146353133e-13,GSE223744,Endothelial,1d,Plasma membrane,Supported,CD73; ecto-5-nucleotidase; EC surface; adenosine production; BBB regulation
+Ccl2,CCL2,2,1,1,6.37,8.01449800100474e-06,GSE223744,Endothelial,1d,Golgi apparatus,Approved,MCP-1; secreted chemokine; EC-derived; monocyte recruitment
+Il6,IL6,2,1,1,6.29,2.069805480858166e-05,GSE223744,Endothelial,1d,Vesicles,Approved,Interleukin-6; secreted; pleiotropic cytokine; stroke response
+Cd44,CD44,2,1,1,4.0,0.0104397534061892,GSE234052,SMC,24h,Plasma membrane,Supported,CD44; EC/SMC surface; hyaluronan receptor; inflammation

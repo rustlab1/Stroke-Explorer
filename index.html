@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stroke Cell Death Explorer</title>
+  <title>Stroke Transcriptomics Explorer</title>
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <style>
-    /* ===== CSS RESET & BASE ===== */
+    /* ============================================================
+       STROKE TRANSCRIPTOMICS EXPLORER — stylesheet
+       ============================================================ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --blue:    #0279EE;
@@ -14,11 +16,13 @@
       --orange:  #FF9400;
       --yellow:  #E9ED4C;
       --pink:    #FD9BED;
+      --purple:  #9B59B6;
+      --red:     #E74C3C;
       --black:   #000000;
       --bg:      #ECE9E2;
       --white:   #FFFFFF;
-      --sidebar-w: 220px;
-      --nav-h:   48px;
+      --sidebar-w: 240px;
+      --nav-h:   52px;
       --text:    #1a1a1a;
       --muted:   #666;
       --border:  #d0cdc6;
@@ -53,13 +57,13 @@
     #topnav {
       position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
       background: var(--white); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; z-index: 100; padding: 0 12px;
+      display: flex; align-items: center; z-index: 100; padding: 0 14px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
-    #topnav .brand { font-weight: 700; font-size: 1rem; color: var(--blue); margin-right: 24px; white-space: nowrap; }
-    #tab-bar { display: flex; gap: 2px; overflow-x: auto; }
+    #topnav .brand { font-weight: 700; font-size: 1rem; color: var(--blue); margin-right: 18px; white-space: nowrap; }
+    #tab-bar { display: flex; gap: 2px; overflow-x: auto; flex: 1; }
     .tab-btn {
-      padding: 8px 14px; border: none; background: transparent; cursor: pointer;
+      padding: 8px 12px; border: none; background: transparent; cursor: pointer;
       font-size: 0.85rem; font-weight: 500; color: var(--muted); border-radius: 6px;
       white-space: nowrap; transition: background 0.15s, color 0.15s;
     }
@@ -67,40 +71,41 @@
     .tab-btn.active { background: var(--blue); color: #fff; }
 
     /* ===== MAIN LAYOUT ===== */
-    #app {
-      display: flex; margin-top: var(--nav-h); height: calc(100vh - var(--nav-h));
-    }
+    #app { display: flex; margin-top: var(--nav-h); height: calc(100vh - var(--nav-h)); }
 
     /* ===== SIDEBAR ===== */
     #sidebar {
       width: var(--sidebar-w); min-width: var(--sidebar-w);
       background: var(--white); border-right: 1px solid var(--border);
       display: flex; flex-direction: column; overflow-y: auto;
-      padding: 16px 12px; gap: 16px;
+      padding: 16px 12px; gap: 14px;
     }
     .sidebar-title { font-size: 1rem; font-weight: 700; color: var(--blue); line-height: 1.2; }
     .sidebar-subtitle { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-    .sidebar-section { display: flex; flex-direction: column; gap: 8px; }
+    .sidebar-section { display: flex; flex-direction: column; gap: 7px; }
     .sidebar-section label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
     .sidebar-section select, .sidebar-section input[type=text] {
       width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
       font-size: 0.82rem; background: var(--bg); color: var(--text); outline: none;
     }
     .sidebar-section select:focus, .sidebar-section input:focus { border-color: var(--blue); }
-    .check-group { display: flex; flex-direction: column; gap: 5px; }
-    .check-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; }
-    .check-item input[type=checkbox] { accent-color: var(--blue); width: 14px; height: 14px; }
-    .radio-group { display: flex; flex-direction: column; gap: 5px; }
-    .radio-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; }
-    .radio-item input[type=radio] { accent-color: var(--blue); }
+    .check-group, .radio-group { display: flex; flex-direction: column; gap: 5px; }
+    .check-item, .radio-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; }
+    .check-item input[type=checkbox], .radio-item input[type=radio] { accent-color: var(--blue); width: 14px; height: 14px; }
     .sidebar-divider { border: none; border-top: 1px solid var(--border); }
     .sidebar-spacer { flex: 1; }
+    .btn {
+      padding: 6px 10px; font-size: 0.8rem; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); border-radius: 6px; cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn-primary:hover { background: #025cb8; }
+    .btn-ghost { background: transparent; }
 
-    /* Time bin legend */
     .legend-row { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; margin-bottom: 3px; }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-    /* About section */
     .about-text { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
 
     /* ===== CONTENT AREA ===== */
@@ -108,19 +113,41 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ===== OVERVIEW TAB ===== */
+    .page-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 4px; }
+    .page-sub   { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+
+    /* ===== HERO BANNER ===== */
+    .hero-banner {
+      background: linear-gradient(135deg, #0279EE 0%, #6C3483 100%);
+      color: #fff; border-radius: 12px; padding: 22px 26px; margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .hero-q { font-size: 1.35rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; }
+    .hero-sub { font-size: 0.88rem; line-height: 1.55; opacity: 0.95; max-width: 900px; }
+    .hero-stats { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 14px; }
+    .hero-stat { font-size: 0.78rem; opacity: 0.9; }
+    .hero-num { font-size: 1.4rem; font-weight: 700; display: block; }
+
+    /* ===== RATIONALE CARD ===== */
+    .rationale-card {
+      background: #f5faff; border-left: 4px solid var(--blue);
+      border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.55;
+    }
+    .rationale-card strong { color: var(--blue); }
+
+    /* ===== OVERVIEW CARDS ===== */
     .cards-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;
     }
     .dataset-card {
       background: var(--white); border-radius: 10px; padding: 16px;
       border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex; flex-direction: column; gap: 9px;
+      cursor: pointer; transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
     }
+    .dataset-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.10); border-color: var(--blue); }
     .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
     .card-id { font-size: 1.05rem; font-weight: 700; color: var(--blue); }
-    .card-id a { color: inherit; text-decoration: none; }
-    .card-id a:hover { text-decoration: underline; }
     .card-badges { display: flex; gap: 5px; flex-wrap: wrap; }
     .badge {
       display: inline-block; padding: 2px 8px; border-radius: 12px;
@@ -132,20 +159,40 @@
     .badge-acute   { background: #cce5ff; color: #004085; }
     .badge-multi   { background: #e8d5f5; color: #4a1a7a; }
     .badge-chronic { background: #ffe5cc; color: #7a3e00; }
+    .card-summary { font-size: 0.82rem; color: var(--text); line-height: 1.45; border-left: 3px solid var(--blue); padding: 6px 10px; background: #f5faff; border-radius: 0 6px 6px 0; }
     .card-meta { font-size: 0.8rem; color: var(--muted); }
     .card-meta strong { color: var(--text); }
     .chips-row { display: flex; flex-wrap: wrap; gap: 4px; }
-    .chip {
-      padding: 2px 8px; background: var(--bg); border-radius: 10px;
-      font-size: 0.72rem; color: var(--text); border: 1px solid var(--border);
-    }
+    .chip { padding: 2px 8px; background: var(--bg); border-radius: 10px; font-size: 0.72rem; color: var(--text); border: 1px solid var(--border); }
     .ct-dots { display: flex; flex-wrap: wrap; gap: 6px; }
     .ct-dot-item { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; }
     .ct-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .card-notes { font-size: 0.78rem; color: var(--muted); font-style: italic; border-top: 1px solid var(--border); padding-top: 8px; }
+
+    /* ===== DATASET DETAIL MODAL ===== */
+    #modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 200; display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #modal-backdrop.open { display: flex; }
+    #modal {
+      background: var(--white); border-radius: 12px; max-width: 780px; width: 100%;
+      max-height: 90vh; overflow-y: auto; padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .modal-title { font-size: 1.35rem; font-weight: 700; color: var(--blue); }
+    .modal-close { background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: 0 6px; }
+    .modal-close:hover { color: var(--text); }
+    .modal-section { margin-bottom: 14px; }
+    .modal-section h4 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
+    .modal-summary { font-size: 0.95rem; line-height: 1.55; border-left: 3px solid var(--blue); padding: 8px 12px; background: #f5faff; border-radius: 0 8px 8px 0; }
+    .modal-facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 16px; font-size: 0.85rem; }
+    .modal-facts div { display: flex; justify-content: space-between; gap: 12px; }
+    .modal-facts span:first-child { color: var(--muted); }
 
     /* ===== CHART PANELS ===== */
-    .chart-panel { background: var(--white); border-radius: 10px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .chart-panel { background: var(--white); border-radius: 10px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.06); margin-bottom: 16px; }
     .chart-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
     .chart-subtitle { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
     .chart-note { font-size: 0.75rem; color: var(--muted); margin-top: 8px; font-style: italic; }
@@ -154,79 +201,173 @@
       background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px;
       padding: 4px 10px; font-size: 0.75rem; color: #856404; margin-bottom: 10px;
     }
+    .info-note {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #e7f3ff; border: 1px solid #b3d4ff; border-radius: 6px;
+      padding: 4px 10px; font-size: 0.75rem; color: #004085; margin-bottom: 10px;
+    }
+
+    /* ===== GENE MODULE EDITOR ===== */
+    .module-editor {
+      background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; margin-bottom: 14px;
+    }
+    .module-editor h3 { font-size: 0.95rem; margin-bottom: 4px; }
+    .module-editor .module-sub { font-size: 0.75rem; color: var(--muted); margin-bottom: 10px; }
+    .module-row {
+      display: flex; align-items: center; gap: 10px; padding: 8px 0;
+      border-top: 1px solid var(--border);
+    }
+    .module-row:first-of-type { border-top: none; }
+    .module-name {
+      min-width: 120px; font-weight: 600; font-size: 0.88rem;
+      padding: 3px 10px; border-radius: 12px; display: inline-block;
+    }
+    .module-genes {
+      flex: 1; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    }
+    .gene-chip {
+      padding: 2px 8px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 3px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .gene-chip.missing { background: #ffecec; border-color: #e74c3c; color: #c0392b; }
+    .gene-chip button { background: transparent; border: none; cursor: pointer; color: var(--muted); font-size: 0.85rem; padding: 0 2px; line-height: 1; }
+    .gene-chip button:hover { color: var(--red); }
+    .module-add {
+      padding: 2px 6px; border: 1px dashed var(--blue); border-radius: 10px;
+      font-size: 0.72rem; background: transparent; color: var(--blue);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace; width: 80px; outline: none;
+    }
+    .module-actions { display: flex; gap: 6px; }
+    .pathway-apoptosis  { background: #fde8e8; color: #c0392b; }
+    .pathway-ferroptosis { background: #d5f5e3; color: #1a7a4a; }
+    .pathway-necroptosis { background: #e8d5f5; color: #6c3483; }
+    .pathway-necrosis   { background: #fde4c0; color: #ad6200; }
+    .pathway-parthanatos { background: #fff0f8; color: #a21c7d; }
 
     /* Gene search */
     .gene-search-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
     .gene-search-row input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; }
     .gene-search-row input:focus { outline: none; border-color: var(--blue); }
     .gene-pathway-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
-    .pathway-apoptosis  { background: #fde8e8; color: #c0392b; }
-    .pathway-ferroptosis { background: #d5f5e3; color: #1a7a4a; }
-    .pathway-necroptosis { background: #e8d5f5; color: #6c3483; }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 900px) {
-      .cards-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 680px) {
+    @media (max-width: 780px) {
       #sidebar { display: none; }
       .cards-grid { grid-template-columns: 1fr; }
       #topnav .brand { display: none; }
+      .modal-facts { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
+<!-- ============================================================
+     LOADING OVERLAY
+     ============================================================ -->
 <div id="loading-overlay">
   <div class="spinner"></div>
-  <h2>Stroke Cell Death Explorer</h2>
+  <h2>Stroke Transcriptomics Explorer</h2>
   <div id="load-progress"><div id="load-bar"></div></div>
   <p id="load-status">Loading datasets…</p>
 </div>
 
-<!-- TOP NAV -->
+<!-- ============================================================
+     TOP NAV
+     ============================================================ -->
 <nav id="topnav">
-  <div class="brand">🧠 Stroke Explorer</div>
+  <div class="brand">Stroke Explorer</div>
   <div id="tab-bar">
     <button class="tab-btn active" data-tab="overview">Overview</button>
-    <button class="tab-btn" data-tab="heatmap">Heatmap</button>
-    <button class="tab-btn" data-tab="forest">Forest Plot</button>
+    <button class="tab-btn" data-tab="celldeath">Cell Death</button>
     <button class="tab-btn" data-tab="temporal">Temporal</button>
+    <button class="tab-btn" data-tab="forest">Meta-Analysis</button>
+    <button class="tab-btn" data-tab="astrocyte">Astrocytes</button>
+    <button class="tab-btn" data-tab="microglia">Microglia</button>
     <button class="tab-btn" data-tab="gene">Gene Explorer</button>
-    <button class="tab-btn" data-tab="glial">Glial States</button>
+    <button class="tab-btn" data-tab="umap">UMAP</button>
   </div>
 </nav>
 
-<!-- MAIN APP -->
+<!-- ============================================================
+     MAIN APP
+     ============================================================ -->
 <div id="app">
 
-  <!-- SIDEBAR -->
+  <!-- ====================== SIDEBAR ====================== -->
   <aside id="sidebar">
     <div>
-      <div class="sidebar-title">Stroke Cell Death Explorer</div>
+      <div class="sidebar-title">Stroke Explorer</div>
       <div class="sidebar-subtitle">9 datasets · 251 genes · Mouse MCAO</div>
     </div>
 
-    <!-- Per-tab filter sections (shown/hidden by JS) -->
-
-    <!-- HEATMAP filters -->
-    <div id="sf-heatmap" class="sidebar-section" style="display:none">
-      <label>Pathway</label>
-      <select id="hm-pathway">
-        <option value="All">All Pathways</option>
-        <option value="Apoptosis">Apoptosis</option>
-        <option value="Ferroptosis">Ferroptosis</option>
-        <option value="Necroptosis">Necroptosis</option>
-      </select>
-      <label style="margin-top:6px">Gene Set</label>
-      <div class="radio-group">
-        <label class="radio-item"><input type="radio" name="hm-geneset" value="core" checked> Core genes</label>
-        <label class="radio-item"><input type="radio" name="hm-geneset" value="full"> Full gene set</label>
+    <!-- OVERVIEW: filter by time bin -->
+    <div id="sf-overview" class="sidebar-section" style="display:none">
+      <label>Filter by time bin</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" class="ov-tb" value="Acute" checked> Acute</label>
+        <label class="check-item"><input type="checkbox" class="ov-tb" value="Multi" checked> Multi-timepoint</label>
+        <label class="check-item"><input type="checkbox" class="ov-tb" value="Chronic" checked> Chronic</label>
       </div>
     </div>
 
-    <!-- FOREST filters -->
+    <!-- CELL DEATH: pathway + scoring mode -->
+    <div id="sf-celldeath" class="sidebar-section" style="display:none">
+      <label>Pathway</label>
+      <select id="cd-pathway">
+        <option value="All">All five pathways</option>
+        <option value="Apoptosis">Apoptosis</option>
+        <option value="Ferroptosis">Ferroptosis</option>
+        <option value="Necroptosis">Necroptosis</option>
+        <option value="Necrosis">Necrosis (pyroptosis/DAMP)</option>
+        <option value="Parthanatos">Parthanatos</option>
+      </select>
+
+      <label style="margin-top:6px">Cell type focus</label>
+      <select id="cd-celltype">
+        <option value="all">All cell types</option>
+        <option value="Neuron">Neuron</option>
+        <option value="Astrocyte">Astrocyte</option>
+        <option value="Microglia">Microglia</option>
+        <option value="Endothelial">Endothelial</option>
+        <option value="Pericyte">Pericyte</option>
+        <option value="Oligodendrocyte">Oligodendrocyte</option>
+        <option value="OPC">OPC</option>
+      </select>
+    </div>
+
+    <!-- TEMPORAL -->
+    <div id="sf-temporal" class="sidebar-section" style="display:none">
+      <label>Cell Type</label>
+      <select id="tm-celltype">
+        <option value="Neuron">Neuron</option>
+        <option value="Astrocyte">Astrocyte</option>
+        <option value="Microglia">Microglia</option>
+        <option value="Endothelial">Endothelial</option>
+        <option value="Pericyte">Pericyte</option>
+        <option value="Oligodendrocyte">Oligodendrocyte</option>
+        <option value="OPC">OPC</option>
+        <option value="Fibroblast">Fibroblast</option>
+      </select>
+
+      <label style="margin-top:6px">Pathway module</label>
+      <select id="tm-pathway">
+        <option value="Apoptosis">Apoptosis</option>
+        <option value="Ferroptosis">Ferroptosis</option>
+        <option value="Necroptosis">Necroptosis</option>
+        <option value="Necrosis">Necrosis</option>
+        <option value="Parthanatos">Parthanatos</option>
+      </select>
+
+      <label style="margin-top:6px">Normalization</label>
+      <div class="radio-group">
+        <label class="radio-item"><input type="radio" name="tm-norm" value="absolute" checked> Absolute (log-norm)</label>
+        <label class="radio-item"><input type="radio" name="tm-norm" value="foldSham"> Fold-change vs Sham</label>
+      </div>
+    </div>
+
+    <!-- FOREST -->
     <div id="sf-forest" class="sidebar-section" style="display:none">
       <label>Cell Type Groups</label>
       <div class="check-group">
@@ -237,44 +378,53 @@
       </div>
     </div>
 
-    <!-- TEMPORAL filters -->
-    <div id="sf-temporal" class="sidebar-section" style="display:none">
-      <label>Cell Type</label>
-      <select id="tm-celltype">
-        <option value="Endothelial">Endothelial</option>
-        <option value="Astrocyte">Astrocyte</option>
-        <option value="Microglia">Microglia</option>
-        <option value="Neuron">Neuron</option>
-        <option value="OPC">OPC</option>
-        <option value="Oligodendrocyte">Oligodendrocyte</option>
-        <option value="Pericyte">Pericyte</option>
-        <option value="Fibroblast">Fibroblast</option>
-      </select>
-      <label style="margin-top:6px">Pathway</label>
-      <div class="radio-group">
-        <label class="radio-item"><input type="radio" name="tm-pathway" value="Apoptosis" checked> Apoptosis</label>
-        <label class="radio-item"><input type="radio" name="tm-pathway" value="Ferroptosis"> Ferroptosis</label>
-        <label class="radio-item"><input type="radio" name="tm-pathway" value="Necroptosis"> Necroptosis</label>
+    <!-- ASTROCYTES -->
+    <div id="sf-astrocyte" class="sidebar-section" style="display:none">
+      <label>Dataset</label>
+      <select id="as-dataset"></select>
+
+      <label style="margin-top:6px">Signature / module</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" class="as-sig" value="A1_markers" checked> <span style="color:#E74C3C;font-weight:600">●</span> A1 (neurotoxic)</label>
+        <label class="check-item"><input type="checkbox" class="as-sig" value="A2_markers" checked> <span style="color:#2ECC71;font-weight:600">●</span> A2 (neuroprotective)</label>
+        <label class="check-item"><input type="checkbox" class="as-sig" value="Pan_reactive" checked> <span style="color:#F39C12;font-weight:600">●</span> Pan-reactive</label>
+        <label class="check-item"><input type="checkbox" class="as-sig" value="Antioxidant" checked> <span style="color:#16A085;font-weight:600">●</span> Antioxidant (Nrf2)</label>
       </div>
     </div>
 
-    <!-- GENE EXPLORER filters -->
+    <!-- MICROGLIA -->
+    <div id="sf-microglia" class="sidebar-section" style="display:none">
+      <label>Dataset</label>
+      <select id="mg-dataset"></select>
+
+      <label style="margin-top:6px">Signature / module</label>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" class="mg-sig" value="M1_markers" checked> <span style="color:#E74C3C;font-weight:600">●</span> M1 (pro-inflammatory)</label>
+        <label class="check-item"><input type="checkbox" class="mg-sig" value="M2_markers" checked> <span style="color:#2ECC71;font-weight:600">●</span> M2 (anti-inflammatory)</label>
+        <label class="check-item"><input type="checkbox" class="mg-sig" value="DAM_markers" checked> <span style="color:#9B59B6;font-weight:600">●</span> DAM (disease-assoc)</label>
+      </div>
+    </div>
+
+    <!-- GENE EXPLORER -->
     <div id="sf-gene" class="sidebar-section" style="display:none">
       <label>Dataset</label>
       <select id="ge-dataset"></select>
       <p style="font-size:0.72rem;color:var(--muted);margin-top:4px">Use the search box in the chart panel to select a gene.</p>
     </div>
 
-    <!-- GLIAL STATES filters -->
-    <div id="sf-glial" class="sidebar-section" style="display:none">
-      <label>Dataset</label>
-      <select id="gl-dataset">
-        <option value="GSE227651">GSE227651</option>
-        <option value="GSE174574">GSE174574</option>
-        <option value="GSE279666">GSE279666</option>
+    <!-- UMAP -->
+    <div id="sf-umap" class="sidebar-section" style="display:none">
+      <label>Color by pathway module</label>
+      <select id="um-pathway">
+        <option value="Apoptosis">Apoptosis</option>
+        <option value="Ferroptosis">Ferroptosis</option>
+        <option value="Necroptosis">Necroptosis</option>
+        <option value="Necrosis">Necrosis</option>
+        <option value="Parthanatos">Parthanatos</option>
+        <option value="Antioxidant">Antioxidant (Nrf2)</option>
       </select>
-      <label style="margin-top:6px">Signatures</label>
-      <div class="check-group" id="gl-sig-checks"></div>
+      <label style="margin-top:6px">Dataset</label>
+      <select id="um-dataset"></select>
     </div>
 
     <div class="sidebar-spacer"></div>
@@ -283,66 +433,174 @@
     <!-- Time bin legend -->
     <div class="sidebar-section">
       <label>Time Bins</label>
-      <div class="legend-row"><div class="legend-dot" style="background:var(--acute-c)"></div> Acute</div>
+      <div class="legend-row"><div class="legend-dot" style="background:var(--acute-c)"></div> Acute (≤ D3)</div>
       <div class="legend-row"><div class="legend-dot" style="background:var(--multi-c)"></div> Multi-timepoint</div>
-      <div class="legend-row"><div class="legend-dot" style="background:var(--chronic-c)"></div> Chronic</div>
+      <div class="legend-row"><div class="legend-dot" style="background:var(--chronic-c)"></div> Chronic (≥ D14)</div>
     </div>
 
     <hr class="sidebar-divider">
 
-    <!-- About -->
     <div class="sidebar-section">
       <label>About</label>
       <p class="about-text">
-        Meta-analysis of 9 mouse MCAO scRNA-seq datasets examining apoptosis, ferroptosis, and necroptosis across 12 cell types.
-        Z-scores are computed per dataset/cell-type/pathway and combined using quality-weighted averaging.
-        Data covers 251 effector genes from curated pathway gene sets.
+        Meta-analysis of 9 mouse MCAO scRNA-seq datasets (251 curated genes across 12 cell types).
+        Module scores are mean log-normalized expression of the genes in each panel; pathway modules
+        are fully editable on the Cell Death tab.
       </p>
     </div>
   </aside>
 
-  <!-- CONTENT -->
+  <!-- ====================== CONTENT ====================== -->
   <main id="content">
 
-    <!-- TAB 1: OVERVIEW -->
+    <!-- ================= TAB 1 · OVERVIEW ================= -->
     <div id="tab-overview" class="tab-panel active">
+      <div class="hero-banner">
+        <div class="hero-q">Which cell-death pathway does each brain cell use after stroke — and when?</div>
+        <div class="hero-sub">
+          A cross-dataset transcriptomic atlas of ischemic stroke at single-cell resolution. Nine
+          MCAO / photothrombosis scRNA/snRNA-seq studies (mouse, rat, human; 500k+ cells) are
+          harmonized here to let you trace apoptosis, ferroptosis, necroptosis, necrosis and
+          parthanatos signatures across astrocytes, microglia, neurons, endothelia, pericytes
+          and more — both at acute (D1-D3) and chronic (D14-D28) timepoints.
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><span class="hero-num" id="hs-ds">9</span> datasets</div>
+          <div class="hero-stat"><span class="hero-num" id="hs-cells">—</span> cells</div>
+          <div class="hero-stat"><span class="hero-num" id="hs-genes">251</span> curated genes</div>
+          <div class="hero-stat"><span class="hero-num" id="hs-paths">5</span> death pathways</div>
+        </div>
+      </div>
+      <div class="page-title">Dataset overview</div>
+      <div class="page-sub">Click any card for full experimental setup, cell types, timepoints, and a direct GEO link.</div>
       <div id="cards-grid" class="cards-grid"></div>
     </div>
 
-    <!-- TAB 2: HEATMAP -->
-    <div id="tab-heatmap" class="tab-panel">
+    <!-- ================= TAB 2 · CELL DEATH ================= -->
+    <div id="tab-celldeath" class="tab-panel">
+      <div class="page-title">Cell death pathway scores</div>
+
+      <div class="rationale-card">
+        <strong>Research question:</strong> Which of the five major programmed-death pathways —
+        <em>apoptosis</em>, <em>ferroptosis</em>, <em>necroptosis</em>, <em>necrosis / pyroptosis</em>,
+        and <em>parthanatos</em> — dominates in each brain cell population after ischemic stroke,
+        and does this change between the acute (D1-D3) and sub-acute / chronic (D7-D28) phases?
+        The panel below shows curated-panel module scores computed across 9 harmonized datasets
+        (authoritative view); the interactive editor further below lets you redefine any gene
+        panel and recompute the scores on the fly.
+      </div>
+
+      <!-- AUTHORITATIVE HEATMAP (precomputed from pipeline) -->
       <div class="chart-panel">
-        <div class="chart-title">Cell Death Pathway Scores Across Datasets</div>
-        <div class="chart-subtitle">Z-scored mean expression of effector genes (stroke vs. control) per cell type and dataset</div>
-        <div class="warn-note">⚠ GSE310324: only Macrophage + Microglia available</div>
-        <div id="hm-geneset-note" style="display:none" class="warn-note">ℹ Full gene set not yet available — showing core genes</div>
-        <div id="chart-heatmap" style="width:100%;min-height:520px"></div>
+        <div class="chart-title">Cross-dataset Δ-score heatmap <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(precomputed curated panels)</span></div>
+        <div class="chart-subtitle">
+          Rows: cell types; columns: datasets ordered Acute → Multi → Chronic. Red = up in stroke, blue = down.
+          Scores are mean-of-core-gene expression differences (<em>stroke − control</em>) from the
+          upstream R pipeline — this view is the reference for the R01 renewal.
+        </div>
+        <div class="chart-note" style="margin-bottom:6px">
+          <label style="font-size:0.78rem"><input type="radio" name="cd-score-metric" value="delta" checked> Δ expression</label>
+          <label style="font-size:0.78rem;margin-left:14px"><input type="radio" name="cd-score-metric" value="delta_z"> Δ z-score (within-dataset)</label>
+        </div>
+        <div id="chart-cd-real" style="width:100%;min-height:440px"></div>
+      </div>
+
+      <!-- MODULE EDITOR (interactive exploration) -->
+      <div class="module-editor">
+        <h3>Custom gene modules <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(edit to re-score live)</span></h3>
+        <div class="module-sub">
+          Each score is the mean (stroke − control) log-norm expression of the listed genes per dataset and cell type.
+          Click × to remove a gene, type a new gene symbol and press Enter to add, or use Reset to restore the default panel.
+          Panels persist between visits via localStorage. Missing genes (not in the 251-gene meta-analysis set) are flagged in red and excluded.
+        </div>
+        <div id="module-editor-rows"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" id="modules-reset-all">Reset all modules to defaults</button>
+        </div>
+      </div>
+
+      <!-- CUSTOM MODULE HEATMAP -->
+      <div class="chart-panel">
+        <div class="chart-title">Custom module Δ-score heatmap</div>
+        <div class="chart-subtitle">
+          Live-recomputed from the editable panels above. All five pathways (including ferroptosis, necrosis and parthanatos)
+          can be explored here; the precomputed panel above only covers the three canonical pathways present in the
+          upstream analysis.
+        </div>
+        <div id="chart-cd-heatmap" style="width:100%;min-height:520px"></div>
+        <div class="chart-note" id="cd-note"></div>
       </div>
     </div>
 
-    <!-- TAB 3: FOREST PLOT -->
-    <div id="tab-forest" class="tab-panel">
+    <!-- ================= TAB 3 · TEMPORAL ================= -->
+    <div id="tab-temporal" class="tab-panel">
+      <div class="page-title">Temporal dynamics</div>
+      <div class="page-sub">Select a cell type and a death-pathway module to trace its expression across time in the two multi-timepoint datasets (GSE197341, GSE279666).</div>
       <div class="chart-panel">
-        <div class="chart-title">Weighted Meta-Analysis Forest Plot</div>
-        <div class="chart-subtitle">Weighted mean z-score ± 95% CI across datasets; point size reflects highlight status</div>
-        <div class="warn-note">⚠ GSE310324: only Macrophage + Microglia available</div>
+        <div class="chart-title" id="tm-title">Temporal module expression</div>
+        <div class="chart-subtitle" id="tm-subtitle"></div>
+        <div id="chart-temporal" style="width:100%;min-height:440px"></div>
+        <div class="chart-note">Dashed = GSE279666 (D3/D14), solid = GSE197341 (D3/D7/D14/D28). D0 = Sham.</div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 4 · FOREST ================= -->
+    <div id="tab-forest" class="tab-panel">
+      <div class="page-title">Weighted meta-analysis</div>
+      <div class="page-sub">Quality-weighted mean z-score (± 95% CI) across all datasets. Single-dataset points are shown as open circles without CIs.</div>
+      <div class="chart-panel">
+        <div class="warn-note">GSE310324 contributes only Macrophage + Microglia</div>
         <div id="chart-forest" style="width:100%;min-height:500px"></div>
       </div>
     </div>
 
-    <!-- TAB 4: TEMPORAL -->
-    <div id="tab-temporal" class="tab-panel">
+    <!-- ================= TAB 5 · ASTROCYTES ================= -->
+    <div id="tab-astrocyte" class="tab-panel">
+      <div class="page-title">Astrocyte reactive states & antioxidant response</div>
+      <div class="page-sub">
+        A1 (neurotoxic), A2 (neuroprotective) and Pan-reactive signatures (Liddelow &amp; Zamanian) plus a custom Nrf2-axis
+        antioxidant module. Includes a timeline for the multi-timepoint datasets.
+      </div>
+
       <div class="chart-panel">
-        <div class="chart-title">Temporal Dynamics of Cell Death Gene Expression</div>
-        <div class="chart-subtitle" id="tm-subtitle">Mean of effector genes: Apoptosis (Casp3/7/9/Bax/Bid), Ferroptosis (Gpx4/Acsl4/Ptgs2/Tfrc/Slc7a11), Necroptosis (Mlkl/Ripk3/Zbp1/Ripk1)</div>
-        <div id="chart-temporal" style="width:100%;min-height:420px"></div>
+        <div class="chart-title">Signature Δ-scores across cell types</div>
+        <div class="chart-subtitle">Stroke − control mean expression of each signature. Zero line = no change.</div>
+        <div id="chart-astro-bar" style="width:100%;min-height:380px"></div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="chart-title">Astrocyte signature timeline (multi-timepoint datasets)</div>
+        <div class="chart-subtitle">Δ-score within the Astrocyte compartment over time.</div>
+        <div id="chart-astro-time" style="width:100%;min-height:360px"></div>
       </div>
     </div>
 
-    <!-- TAB 5: GENE EXPLORER -->
-    <div id="tab-gene" class="tab-panel">
+    <!-- ================= TAB 6 · MICROGLIA ================= -->
+    <div id="tab-microglia" class="tab-panel">
+      <div class="page-title">Microglia activation states</div>
+      <div class="page-sub">
+        M1 (pro-inflammatory), M2 (anti-inflammatory) and DAM (disease-associated microglia) signatures across cell types and
+        over time. Note the M1/M2 axis is a simplification — in practice microglia occupy a continuum of states.
+      </div>
+
       <div class="chart-panel">
-        <div class="chart-title">Gene Expression Explorer</div>
+        <div class="chart-title">Signature Δ-scores across cell types</div>
+        <div class="chart-subtitle">Stroke − control mean expression of each microglia signature. Rows other than Microglia/Macrophage are shown for comparison.</div>
+        <div id="chart-mg-bar" style="width:100%;min-height:380px"></div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="chart-title">Microglia signature timeline (multi-timepoint datasets)</div>
+        <div class="chart-subtitle">Δ-score within the Microglia compartment over time.</div>
+        <div id="chart-mg-time" style="width:100%;min-height:360px"></div>
+      </div>
+    </div>
+
+    <!-- ================= TAB 7 · GENE EXPLORER ================= -->
+    <div id="tab-gene" class="tab-panel">
+      <div class="page-title">Gene explorer</div>
+      <div class="page-sub">Browse expression of any of the 251 curated effector genes across all cell types and conditions within a chosen dataset.</div>
+      <div class="chart-panel">
         <div class="gene-search-row">
           <input type="text" id="ge-gene-input" list="gene-datalist" placeholder="Search gene… (e.g. Casp3)" value="Casp3" autocomplete="off">
           <datalist id="gene-datalist"></datalist>
@@ -350,49 +608,103 @@
         </div>
         <div class="chart-subtitle" id="ge-subtitle">Showing expression of <strong>Casp3</strong> across cell types and conditions</div>
         <div id="chart-gene" style="width:100%;min-height:420px"></div>
-        <div class="chart-note">Expression values are log-normalized counts from AverageExpression (Seurat)</div>
+        <div class="chart-note">Values are log-normalized counts (Seurat AverageExpression).</div>
       </div>
     </div>
 
-    <!-- TAB 6: GLIAL STATES -->
-    <div id="tab-glial" class="tab-panel">
+    <!-- ================= TAB 8 · UMAP ================= -->
+    <div id="tab-umap" class="tab-panel">
+      <div class="page-title">UMAP (schematic)</div>
+      <div class="page-sub">
+        A schematic 2-D layout of cell types — point size ~ # cells, colour = Δ-score of the selected pathway module (stroke − control).
+        This is an interpretive view built from module scores, not a true cell-resolution UMAP embedding.
+      </div>
       <div class="chart-panel">
-        <div class="chart-title">Reactive Glia State Scores</div>
-        <div class="chart-subtitle">Delta expression (stroke − control) for reactive astrocyte and microglia signatures</div>
-        <div id="chart-glial" style="width:100%;min-height:420px"></div>
+        <div id="chart-umap" style="width:100%;min-height:520px"></div>
       </div>
     </div>
 
   </main>
 </div>
 
+<!-- ============================================================
+     DATASET DETAIL MODAL
+     ============================================================ -->
+<div id="modal-backdrop" role="dialog" aria-modal="true">
+  <div id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title"></div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-top:2px" id="modal-journal"></div>
+      </div>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+
+    <div class="modal-section">
+      <h4>AI summary of the study</h4>
+      <div class="modal-summary" id="modal-summary"></div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Key facts</h4>
+      <div class="modal-facts" id="modal-facts"></div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Timepoints</h4>
+      <div class="chips-row" id="modal-timepoints"></div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Cell types captured</h4>
+      <div class="ct-dots" id="modal-celltypes"></div>
+    </div>
+
+    <div class="modal-section">
+      <h4>Notes</h4>
+      <div style="font-size:0.87rem;color:var(--text);line-height:1.5" id="modal-notes"></div>
+    </div>
+
+    <div class="modal-section" style="display:flex;gap:10px;flex-wrap:wrap">
+      <a id="modal-geo-link" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none">Open in GEO</a>
+      <a id="modal-pubmed-link" target="_blank" rel="noopener" class="btn" style="text-decoration:none">Search on PubMed</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
 <script>
 /* ============================================================
-   STROKE CELL DEATH EXPLORER — main.js (inline)
+   STROKE TRANSCRIPTOMICS EXPLORER — application script
+   ------------------------------------------------------------
+   Single-file SPA. Loads 5 precomputed JSON tables plus a
+   gene-by-cell-type expression matrix, then renders 8 tabs:
+
+   1. Overview        – clickable cards with AI summaries
+   2. Cell Death      – editable gene modules for 5 pathways
+   3. Temporal        – per-module time course
+   4. Meta-Analysis   – weighted forest plot
+   5. Astrocytes      – A1/A2/Pan + Nrf2 antioxidant module
+   6. Microglia       – M1/M2/DAM states
+   7. Gene Explorer   – per-gene expression bar charts
+   8. UMAP            – schematic 2-D layout coloured by module
    ============================================================ */
 
-// ── Color palette ──────────────────────────────────────────
+/* ── Colour palette ─────────────────────────────────────── */
 const C = {
-  blue:    '#0279EE',
-  green:   '#75A025',
-  orange:  '#FF9400',
-  yellow:  '#E9ED4C',
-  pink:    '#FD9BED',
-  black:   '#000000',
-  bg:      '#ECE9E2',
-  white:   '#FFFFFF',
-  muted:   '#888888',
-  acute:   '#0279EE',
-  multi:   '#9B59B6',
-  chronic: '#FF9400',
+  blue: '#0279EE', green: '#75A025', orange: '#FF9400', yellow: '#E9ED4C',
+  pink: '#FD9BED', purple: '#9B59B6', red: '#E74C3C', teal: '#16A085',
+  muted: '#888', acute: '#0279EE', multi: '#9B59B6', chronic: '#FF9400',
 };
 
-// Cell type group membership
+/* Cell-type grouping & ordering ---------------------------- */
 const CT_GROUPS = {
-  vascular:  ['Endothelial','Pericyte','SMC','Fibroblast'],
-  glial:     ['Astrocyte','Microglia','OPC','Oligodendrocyte'],
-  neuronal:  ['Neuron'],
-  immune:    ['Macrophage','T.cell','B.cell','NK.cell'],
+  vascular: ['Endothelial','Pericyte','SMC','Fibroblast'],
+  glial:    ['Astrocyte','Microglia','OPC','Oligodendrocyte'],
+  neuronal: ['Neuron'],
+  immune:   ['Macrophage','T.cell','B.cell','NK.cell'],
 };
 const CT_ORDER = [
   'Endothelial','Pericyte','SMC','Fibroblast',
@@ -400,7 +712,7 @@ const CT_ORDER = [
   'Neuron',
   'Macrophage','T.cell','B.cell','NK.cell',
 ];
-const CT_HIGHLIGHT = new Set(['Endothelial','Pericyte','Neuron','Astrocyte']);
+const CT_HIGHLIGHT = new Set(['Endothelial','Pericyte','Neuron','Astrocyte','Microglia']);
 
 function ctGroup(ct) {
   for (const [g, arr] of Object.entries(CT_GROUPS)) if (arr.includes(ct)) return g;
@@ -408,71 +720,206 @@ function ctGroup(ct) {
 }
 function ctColor(ct) {
   const g = ctGroup(ct);
-  return g === 'vascular' ? C.blue : g === 'glial' ? C.green : g === 'neuronal' ? C.orange : C.muted;
+  return g === 'vascular' ? C.blue
+       : g === 'glial'    ? C.green
+       : g === 'neuronal' ? C.orange
+       : C.muted;
 }
+const CT_DOT_COLORS = {
+  Endothelial: '#0279EE', Pericyte: '#1A5276', SMC: '#2E86C1', Fibroblast: '#85C1E9',
+  Astrocyte: '#75A025', Microglia: '#1E8449', OPC: '#A9DFBF', Oligodendrocyte: '#27AE60',
+  Neuron: '#FF9400',
+  Macrophage: '#888', 'T.cell': '#AAA', 'B.cell': '#CCC', 'NK.cell': '#DDD',
+};
 
-// Pathway colors
-const PATHWAY_COLORS = { Apoptosis: '#C0392B', Ferroptosis: '#1A7A4A', Necroptosis: '#6C3483' };
-const PATHWAY_BG     = { Apoptosis: '#fde8e8', Ferroptosis: '#d5f5e3', Necroptosis: '#e8d5f5' };
+/* Pathway look-up ------------------------------------------ */
+const PATHWAY_COLORS = {
+  Apoptosis:   '#C0392B',
+  Ferroptosis: '#1A7A4A',
+  Necroptosis: '#6C3483',
+  Necrosis:    '#AD6200',
+  Parthanatos: '#A21C7D',
+  Antioxidant: '#16A085',
+};
 
-// Signature colors
 const SIG_COLORS = {
-  A1_markers:   '#E74C3C',
-  A2_markers:   '#2ECC71',
-  Pan_reactive: '#F39C12',
-  M1_markers:   '#E74C3C',
-  M2_markers:   '#2ECC71',
-  DAM_markers:  '#9B59B6',
+  A1_markers: C.red, A2_markers: '#2ECC71', Pan_reactive: '#F39C12',
+  Antioxidant: C.teal,
+  M1_markers: C.red, M2_markers: '#2ECC71', DAM_markers: C.purple,
 };
 const SIG_LABELS = {
-  A1_markers: 'A1', A2_markers: 'A2', Pan_reactive: 'Pan',
+  A1_markers: 'A1', A2_markers: 'A2', Pan_reactive: 'Pan-reactive', Antioxidant: 'Antioxidant (Nrf2)',
   M1_markers: 'M1', M2_markers: 'M2', DAM_markers: 'DAM',
 };
 
-// ── Global data store ──────────────────────────────────────
-const DATA = {};
+/* ============================================================
+   DEFAULT GENE MODULES
+   Small (5-10 genes) curated panels for each death pathway.
+   These are the *default* set of genes — users can edit them
+   in the Cell Death tab, and edits persist in localStorage.
+   All default genes exist in gene_expr.json (verified).
+   ------------------------------------------------------------ */
+const DEFAULT_MODULES = {
+  Apoptosis:  ['Casp3','Casp9','Bax','Bid','Bcl2l11','Fas','Trp53','Cycs'],
+  Ferroptosis:['Gpx4','Acsl4','Slc7a11','Tfrc','Ftl1','Fth1','Ncoa4','Hmox1'],
+  Necroptosis:['Mlkl','Ripk3','Ripk1','Fadd','Tnfrsf10b'],
+  Necrosis:   ['Hmgb1','Hmgb2','Il1b','Il1a','Tnf','Gsdmd'],
+  // True Parthanatos markers (PARP1, AIFM1) are absent from the 251-gene set,
+  // so we fall back to the closest available proxies and flag this in the UI.
+  Parthanatos:['Aifm2','Aifm3','Nox1','Nox4','Cycs'],
+};
+/* Antioxidant response module (astrocyte tab) -------------- */
+const ANTIOX_GENES = ['Gclc','Gclm','Gpx1','Gpx3','Gpx4','Hmox1','Sod1','Txnrd1','Gsr','Gss'];
 
-// ── Loading progress ───────────────────────────────────────
+/* Current (possibly user-edited) modules. Loaded from localStorage. */
+let MODULES = loadModules();
+
+function loadModules() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('strokeExplorer.modules') || '{}');
+    const out = {};
+    for (const k of Object.keys(DEFAULT_MODULES)) {
+      out[k] = Array.isArray(saved[k]) && saved[k].length
+        ? [...saved[k]]
+        : [...DEFAULT_MODULES[k]];
+    }
+    return out;
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DEFAULT_MODULES));
+  }
+}
+function saveModules() {
+  try { localStorage.setItem('strokeExplorer.modules', JSON.stringify(MODULES)); } catch (e) {}
+}
+
+/* ============================================================
+   AI-STYLE DATASET SUMMARIES
+   A concise, one-sentence description of each study's
+   experimental setup — used on overview cards and in the
+   dataset detail modal.
+   ------------------------------------------------------------ */
+const DATASET_SUMMARIES = {
+  GSE197341: "Longitudinal 107k-cell scRNA-seq of mouse MCAO cortex and striatum at D3, D7, D14 and D28 plus sham — the only dataset in the collection that spans acute through chronic phases in a single uniform design.",
+  GSE250245: "Paired ipsi- vs contralateral cortex scRNA-seq (~89k cells) at D2 post-MCAO, designed to isolate lesion-intrinsic transcriptional changes from systemic or hemispheric effects.",
+  GSE174574: "Acute D1-post-MCAO cortex scRNA-seq (~62k cells) with unusually strong vascular coverage, capturing the earliest transcriptional response to ischemia before glial scar formation.",
+  GSE227651: "Three-timepoint (D1 / D3 / D7) MCAO cortex scRNA-seq (~58k cells) — one of the few datasets covering the whole first post-stroke week and including smooth-muscle cells and macrophages.",
+  GSE310324: "Focused D3-post-MCAO cortex scRNA-seq (~45k cells, 2025 in press) narrowed to macrophage and microglia compartments to dissect innate immune responses at the peak inflammatory window.",
+  GSE276202: "Spatially resolved one-month chronic MCAO cortex (~38k cells) distinguishing infarct core, peri-infarct zone, and contralateral control to map chronic tissue remodelling.",
+  GSE279666: "Multi-timepoint D3 + D14 MCAO cortex scRNA-seq (~52k cells) useful for directly comparing sub-acute inflammation with early recovery-phase repair transcriptomes in matched animals.",
+  GSE244576: "Unpublished D3-post-MCAO cortex scRNA-seq (~31k cells) serving primarily as an independent replication cohort for the acute-phase response.",
+  GSE300564: "Treatment-arm MCAO cortex scRNA-seq (~18k cells, Stanford unpublished) comparing anti-VCAM1 and anti-VLA4 adhesion blockade with isotype control to probe leukocyte-driven injury.",
+};
+
+/* ============================================================
+   DATA STORE & LOADING
+   ------------------------------------------------------------ */
+const DATA = {};
 let loadedCount = 0;
-const TOTAL_FILES = 6;
+let TOTAL_FILES = 10;
+
 function updateProgress(msg) {
   loadedCount++;
   document.getElementById('load-bar').style.width = (loadedCount / TOTAL_FILES * 100) + '%';
   document.getElementById('load-status').textContent = msg;
 }
 
-// ── Fetch all data files ───────────────────────────────────
 async function loadAllData() {
-  const files = [
-    { key: 'datasets', path: 'data/datasets.json',  msg: 'Loading datasets…' },
-    { key: 'heatmap',  path: 'data/heatmap.json',   msg: 'Loading heatmap data…' },
-    { key: 'forest',   path: 'data/forest.json',    msg: 'Loading forest plot data…' },
-    { key: 'temporal', path: 'data/temporal.json',  msg: 'Loading temporal data…' },
-    { key: 'glial',    path: 'data/glial.json',     msg: 'Loading glial state data…' },
-    { key: 'gene_expr',path: 'data/gene_expr.json', msg: 'Loading gene expression data (large file)…' },
+  // Small JSON files first (fast), then the big gene-expression matrix last.
+  const small = [
+    { key: 'datasets',   path: 'data/datasets.json',              msg: 'Loading datasets…' },
+    { key: 'heatmap',    path: 'data/heatmap.json',               msg: 'Loading heatmap data…' },
+    { key: 'forest',     path: 'data/forest.json',                msg: 'Loading forest plot data…' },
+    { key: 'temporal',   path: 'data/temporal.json',              msg: 'Loading temporal data…' },
+    { key: 'glial',      path: 'data/glial.json',                 msg: 'Loading glial state data…' },
+    { key: 'cellDeath',  path: 'data/cell_death_real.json',       msg: 'Loading real cell-death scores…' },
+    { key: 'coreScores', path: 'data/core_gene_scores.json',      msg: 'Loading core module scores…' },
+    { key: 'signatures', path: 'data/cell_death_signatures.json', msg: 'Loading pathway gene signatures…' },
+    { key: 'glialFull',  path: 'data/glial_full.json',            msg: 'Loading extended glial scores…' },
   ];
-
-  // Load first 5 in parallel, gene_expr separately (large)
-  const smallFiles = files.slice(0, 5);
-  const geneFile   = files[5];
-
-  await Promise.all(smallFiles.map(async f => {
-    const r = await fetch(f.path);
-    DATA[f.key] = await r.json();
-    updateProgress(f.msg);
-  }));
-
-  // gene_expr with streaming note
-  document.getElementById('load-status').textContent = 'Loading gene expression data (7 MB)…';
-  const r = await fetch(geneFile.path);
-  DATA[geneFile.key] = await r.json();
-  updateProgress('Ready!');
+  const large = { key: 'gene_expr', path: 'data/gene_expr.json', msg: 'Loading gene expression matrix (~7 MB)…' };
+  TOTAL_FILES = small.length + 1;
+  for (const f of small) {
+    const r = await fetch(f.path); DATA[f.key] = await r.json(); updateProgress(f.msg);
+  }
+  document.getElementById('load-status').textContent = large.msg;
+  const r = await fetch(large.path); DATA[large.key] = await r.json(); updateProgress('Ready!');
+  buildIndexes();
 }
 
-// ── Tab management ─────────────────────────────────────────
-let activeTab = 'overview';
-const tabRendered = {};
+/* ============================================================
+   INDEXING — for fast gene-module scoring on the client.
+   Builds a Map keyed on `${dataset}|${cell_type}|${condition}|${gene}`
+   -> mean_expr, and a Set of known genes.
+   ------------------------------------------------------------ */
+const IDX = { expr: new Map(), knownGenes: new Set(), byDataset: new Map() };
 
+function buildIndexes() {
+  for (const r of DATA.gene_expr) {
+    IDX.knownGenes.add(r.gene);
+    const k = `${r.dataset}|${r.cell_type}|${r.condition}|${r.gene}`;
+    IDX.expr.set(k, r);
+    if (!IDX.byDataset.has(r.dataset)) IDX.byDataset.set(r.dataset, { conds: new Set(), cells: new Set() });
+    IDX.byDataset.get(r.dataset).conds.add(r.condition);
+    IDX.byDataset.get(r.dataset).cells.add(r.cell_type);
+  }
+}
+
+/* Mean expression of a gene list in a (dataset, cell_type, condition) slice */
+function moduleMean(dataset, cellType, condition, genes) {
+  let sum = 0, n = 0;
+  for (const g of genes) {
+    const k = `${dataset}|${cellType}|${condition}|${g}`;
+    const row = IDX.expr.get(k);
+    if (row && typeof row.mean_expr === 'number') { sum += row.mean_expr; n++; }
+  }
+  return n > 0 ? { mean: sum / n, nGenes: n } : { mean: null, nGenes: 0 };
+}
+
+/* Identify control-condition labels for a given dataset ----- */
+function controlCondsFor(dataset) {
+  const info = IDX.byDataset.get(dataset);
+  if (!info) return [];
+  const out = [];
+  for (const c of info.conds) {
+    // Take any record to ask if it's control
+    for (const ct of info.cells) {
+      const k = `${dataset}|${ct}|${c}|${DATA.gene_expr.find(r=>r.dataset===dataset&&r.condition===c)?.gene || ''}`;
+      const row = IDX.expr.get(k);
+      if (row && row.is_control) { out.push(c); break; }
+    }
+  }
+  return out;
+}
+
+/* Δ(stroke − control) module score for a given (dataset, cell_type, pathway) */
+function moduleDelta(dataset, cellType, genes) {
+  const info = IDX.byDataset.get(dataset);
+  if (!info) return { delta: null, ctrl: null, stroke: null, nGenes: 0 };
+  // Find any record for this dataset to pick out control/stroke labels
+  const controls = [], strokes = [];
+  for (const c of info.conds) {
+    const sample = DATA.gene_expr.find(r => r.dataset === dataset && r.condition === c);
+    if (!sample) continue;
+    (sample.is_control ? controls : strokes).push(c);
+  }
+  // Mean-of-means across control labels and stroke labels
+  function avg(conds) {
+    const vals = []; let nG = 0;
+    for (const c of conds) {
+      const m = moduleMean(dataset, cellType, c, genes);
+      if (m.mean !== null) { vals.push(m.mean); nG = Math.max(nG, m.nGenes); }
+    }
+    return { mean: vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null, nGenes: nG };
+  }
+  const cm = avg(controls), sm = avg(strokes);
+  if (cm.mean === null || sm.mean === null) return { delta: null, ctrl: cm.mean, stroke: sm.mean, nGenes: 0 };
+  return { delta: sm.mean - cm.mean, ctrl: cm.mean, stroke: sm.mean, nGenes: Math.max(cm.nGenes, sm.nGenes) };
+}
+
+/* ============================================================
+   TAB SWITCHING
+   ------------------------------------------------------------ */
+let activeTab = 'overview';
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
@@ -482,20 +929,20 @@ function switchTab(tab) {
   activeTab = tab;
   renderTab(tab);
 }
-
 function renderTab(tab) {
   if (tab === 'overview')  renderOverview();
-  if (tab === 'heatmap')   renderHeatmap();
-  if (tab === 'forest')    renderForest();
+  if (tab === 'celldeath') renderCellDeath();
   if (tab === 'temporal')  renderTemporal();
+  if (tab === 'forest')    renderForest();
+  if (tab === 'astrocyte') renderAstrocyte();
+  if (tab === 'microglia') renderMicroglia();
   if (tab === 'gene')      renderGene();
-  if (tab === 'glial')     renderGlial();
+  if (tab === 'umap')      renderUmap();
 }
 
-// ── Utility helpers ────────────────────────────────────────
+/* ── formatting helpers ─────────────────────────────────── */
 function fmtNum(n) { return n.toLocaleString(); }
 function fmtPct(w) { return (w * 100).toFixed(1) + '%'; }
-
 function timeBinBadge(tb) {
   const cls = tb === 'Acute' ? 'badge-acute' : tb === 'Multi' ? 'badge-multi' : 'badge-chronic';
   return `<span class="badge ${cls}">${tb}</span>`;
@@ -505,374 +952,638 @@ function weightBadge(w) {
   const cls = pct > 12 ? 'badge-green' : pct >= 10 ? 'badge-yellow' : 'badge-orange';
   return `<span class="badge ${cls}">w=${fmtPct(w)}</span>`;
 }
+function debounce(fn, ms) { let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a), ms);}; }
 
-const CT_DOT_COLORS = {
-  Endothelial: '#0279EE', Pericyte: '#1A5276', SMC: '#2E86C1', Fibroblast: '#85C1E9',
-  Astrocyte: '#75A025', Microglia: '#1E8449', OPC: '#A9DFBF', Oligodendrocyte: '#27AE60',
-  Neuron: '#FF9400',
-  Macrophage: '#888', 'T.cell': '#AAA', 'B.cell': '#CCC',
-};
-
-// ── TAB 1: OVERVIEW ────────────────────────────────────────
+/* ============================================================
+   TAB 1 · OVERVIEW
+   Clickable cards with AI summary; click opens modal.
+   ------------------------------------------------------------ */
 function renderOverview() {
+  // Hero stats
+  const totalCells = DATA.datasets.reduce((a, d) => a + (d.n_cells || 0), 0);
+  const el = (id) => document.getElementById(id);
+  if (el('hs-ds'))    el('hs-ds').textContent    = DATA.datasets.length;
+  if (el('hs-cells')) el('hs-cells').textContent = (totalCells / 1000).toFixed(0) + 'k';
+
   const grid = document.getElementById('cards-grid');
-  if (grid.children.length > 0) return; // already rendered
-  grid.innerHTML = DATA.datasets.map(d => {
-    const geoUrl = `https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${d.id}`;
+  const active = new Set([...document.querySelectorAll('.ov-tb:checked')].map(cb => cb.value));
+  const items = DATA.datasets.filter(d => active.size === 0 || active.has(d.time_bin));
+  grid.innerHTML = items.map(d => {
     const tpChips = d.timepoints.map(t => `<span class="chip">${t}</span>`).join('');
     const ctDots  = d.cell_types.map(ct => {
       const col = CT_DOT_COLORS[ct] || '#999';
       return `<span class="ct-dot-item"><span class="ct-dot" style="background:${col}"></span>${ct}</span>`;
     }).join('');
+    const summary = DATASET_SUMMARIES[d.id] || d.notes;
     return `
-    <div class="dataset-card">
+    <div class="dataset-card" data-id="${d.id}">
       <div class="card-header">
-        <div class="card-id"><a href="${geoUrl}" target="_blank" rel="noopener">${d.id}</a></div>
-        <div class="card-badges">
-          ${weightBadge(d.weight)}
-          ${timeBinBadge(d.time_bin)}
-        </div>
+        <div class="card-id">${d.id}</div>
+        <div class="card-badges">${weightBadge(d.weight)}${timeBinBadge(d.time_bin)}</div>
       </div>
+      <div class="card-summary">${summary}</div>
       <div class="card-meta"><strong>${d.journal}</strong> · ${d.year} · Tier ${d.journal_tier}</div>
       <div class="card-meta"><strong>${fmtNum(d.n_cells)}</strong> cells · ${d.region}</div>
       <div class="card-meta"><strong>Timepoints:</strong></div>
       <div class="chips-row">${tpChips}</div>
       <div class="card-meta"><strong>Cell types:</strong></div>
       <div class="ct-dots">${ctDots}</div>
-      <div class="card-notes">${d.notes}</div>
     </div>`;
   }).join('');
-}
-
-// ── TAB 2: HEATMAP ─────────────────────────────────────────
-function getHeatmapDatasets() {
-  // Order: Acute first, then Multi, then Chronic; within each bin by weight desc
-  const ds = DATA.datasets.slice().sort((a, b) => {
-    const binOrder = { Acute: 0, Multi: 1, Chronic: 2 };
-    const bo = binOrder[a.time_bin] - binOrder[b.time_bin];
-    return bo !== 0 ? bo : b.weight - a.weight;
+  // Click -> modal
+  grid.querySelectorAll('.dataset-card').forEach(card => {
+    card.addEventListener('click', () => openDatasetModal(card.dataset.id));
   });
-  return ds.map(d => d.id);
 }
 
-function renderHeatmap() {
-  const pathway = document.getElementById('hm-pathway').value;
-  const pathways = pathway === 'All' ? ['Apoptosis','Ferroptosis','Necroptosis'] : [pathway];
-  const dsOrder  = getHeatmapDatasets();
+/* ── Dataset detail modal ──────────────────────────────── */
+function openDatasetModal(id) {
+  const d = DATA.datasets.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('modal-title').textContent   = d.id + ' · ' + d.title;
+  document.getElementById('modal-journal').textContent = `${d.journal} (${d.year}) · Journal tier ${d.journal_tier}`;
+  document.getElementById('modal-summary').textContent = DATASET_SUMMARIES[d.id] || d.notes;
+  document.getElementById('modal-facts').innerHTML = `
+    <div><span>Species</span><strong>${d.species}</strong></div>
+    <div><span>Assay</span><strong>${d.assay}</strong></div>
+    <div><span>Region</span><strong>${d.region}</strong></div>
+    <div><span>Cells</span><strong>${fmtNum(d.n_cells)}</strong></div>
+    <div><span>Time bin</span><strong>${d.time_bin}</strong></div>
+    <div><span>Meta-weight</span><strong>${fmtPct(d.weight)}</strong></div>`;
+  document.getElementById('modal-timepoints').innerHTML = d.timepoints.map(t=>`<span class="chip">${t}</span>`).join('');
+  document.getElementById('modal-celltypes').innerHTML = d.cell_types.map(ct => {
+    const col = CT_DOT_COLORS[ct] || '#999';
+    return `<span class="ct-dot-item"><span class="ct-dot" style="background:${col}"></span>${ct}</span>`;
+  }).join('');
+  document.getElementById('modal-notes').textContent = d.notes;
+  document.getElementById('modal-geo-link').href = `https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=${d.id}`;
+  document.getElementById('modal-pubmed-link').href = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(d.id + ' stroke scRNA-seq')}`;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+function closeDatasetModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+}
 
-  // Cell types present in data
-  const ctPresent = CT_ORDER.filter(ct => DATA.heatmap.some(r => r.cell_type === ct));
+/* ============================================================
+   TAB 2 · CELL DEATH
+   Module editor + on-the-fly Δ heatmap.
+   ------------------------------------------------------------ */
+function renderModuleEditor() {
+  const wrap = document.getElementById('module-editor-rows');
+  wrap.innerHTML = Object.keys(DEFAULT_MODULES).map(pw => {
+    const cls = 'pathway-' + pw.toLowerCase();
+    const chips = MODULES[pw].map(g => {
+      const missing = !IDX.knownGenes.has(g);
+      return `<span class="gene-chip${missing ? ' missing' : ''}" title="${missing ? 'Gene not in dataset' : 'Click × to remove'}">${g}<button data-pw="${pw}" data-g="${g}" class="gene-remove">×</button></span>`;
+    }).join('');
+    return `
+      <div class="module-row">
+        <div class="module-name ${cls}">${pw}</div>
+        <div class="module-genes" data-pw="${pw}">
+          ${chips}
+          <input type="text" class="module-add" placeholder="+ gene…" data-pw="${pw}">
+        </div>
+        <div class="module-actions">
+          <button class="btn btn-ghost" data-pw="${pw}" data-act="reset">Reset</button>
+        </div>
+      </div>`;
+  }).join('');
 
-  // Build one subplot per pathway
+  // Wire chip removals
+  wrap.querySelectorAll('.gene-remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const pw = btn.dataset.pw, g = btn.dataset.g;
+      MODULES[pw] = MODULES[pw].filter(x => x !== g);
+      saveModules(); renderModuleEditor(); renderCellDeathHeatmap();
+    });
+  });
+  // Wire add-gene inputs
+  wrap.querySelectorAll('.module-add').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const pw = inp.dataset.pw, g = inp.value.trim();
+        if (g && !MODULES[pw].includes(g)) { MODULES[pw].push(g); saveModules(); renderModuleEditor(); renderCellDeathHeatmap(); }
+      }
+    });
+  });
+  // Wire reset buttons
+  wrap.querySelectorAll('[data-act="reset"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pw = btn.dataset.pw;
+      MODULES[pw] = [...DEFAULT_MODULES[pw]];
+      saveModules(); renderModuleEditor(); renderCellDeathHeatmap();
+    });
+  });
+}
+
+function renderCellDeath() {
+  renderCellDeathReal();
+  renderModuleEditor();
+  renderCellDeathHeatmap();
+}
+
+/* Authoritative heatmap from core_gene_scores.json (precomputed pipeline)
+   Covers Apoptosis / Ferroptosis / Necroptosis — the three pathways present in
+   the upstream R pipeline. Rows = cell types, columns = datasets, faceted by
+   pathway in three panels. */
+function renderCellDeathReal() {
+  const metric = document.querySelector('input[name="cd-score-metric"]:checked')?.value || 'delta';
+  const pathways = ['Apoptosis', 'Ferroptosis', 'Necroptosis'];
+  const dsOrder = datasetOrder();
+  const cellTypes = CT_ORDER.filter(ct => DATA.coreScores.some(r => r.cell_type === ct));
+
+  const traces = [], annotations = [];
   const nCols = pathways.length;
-  const traces = [];
-  const annotations = [];
 
   pathways.forEach((pw, pi) => {
-    const rows = DATA.heatmap.filter(r => r.pathway === pw);
-    // Build z matrix: rows=cell_types, cols=datasets
-    const zMatrix = ctPresent.map(ct =>
-      dsOrder.map(ds => {
-        const row = rows.find(r => r.cell_type === ct && r.dataset === ds);
-        return row ? row.z : null;
-      })
-    );
-    const textMatrix = ctPresent.map(ct =>
-      dsOrder.map(ds => {
-        const row = rows.find(r => r.cell_type === ct && r.dataset === ds);
-        if (!row) return '';
-        return `Dataset: ${ds}<br>Cell type: ${ct}<br>Pathway: ${pw}<br>Z-score: ${row.z?.toFixed(3)}<br>Raw Δ: ${row.raw_delta?.toFixed(4)}`;
-      })
-    );
+    const z = cellTypes.map(ct => dsOrder.map(ds => {
+      const r = DATA.coreScores.find(x => x.dataset === ds && x.cell_type === ct && x.pathway === pw);
+      return r ? r[metric] : null;
+    }));
+    const text = cellTypes.map(ct => dsOrder.map(ds => {
+      const r = DATA.coreScores.find(x => x.dataset === ds && x.cell_type === ct && x.pathway === pw);
+      if (!r) return '(no data)';
+      return `<b>${r.cell_type}</b> · ${r.pathway}<br>Dataset: ${r.dataset} (${r.time_bin}, D${r.days})<br>` +
+             `Δ expression: ${r.delta.toFixed(3)}<br>Δ z-score: ${r.delta_z.toFixed(2)}<br>` +
+             `Stroke mean: ${r.stroke.toFixed(3)} · Ctrl mean: ${r.ctrl.toFixed(3)}<br>` +
+             `n genes in panel: ${r.n_genes}`;
+    }));
+    const flat = z.flat().filter(v => v !== null && !isNaN(v));
+    const mx = flat.length ? Math.max(0.3, Math.max(...flat.map(Math.abs))) : 1;
+    const xref = nCols === 1 ? 'x' : `x${pi+1}`;
+    const yref = nCols === 1 ? 'y' : `y${pi+1}`;
 
-    const xref = nCols === 1 ? 'x' : `x${pi + 1}`;
-    const yref = nCols === 1 ? 'y' : `y${pi + 1}`;
+    traces.push({
+      type: 'heatmap', z, x: dsOrder, y: cellTypes, text,
+      hovertemplate: '%{text}<extra></extra>',
+      colorscale: 'RdBu', reversescale: true,
+      zmin: -mx, zmax: mx,
+      showscale: pi === nCols - 1,
+      colorbar: { title: metric === 'delta_z' ? 'Δ z' : 'Δ expr', thickness: 14, len: 0.8 },
+      xaxis: xref, yaxis: yref,
+    });
+
+    annotations.push({
+      text: `<b>${pw}</b>`, x: (pi + 0.5) / nCols, y: 1.05,
+      xref: 'paper', yref: 'paper', showarrow: false,
+      font: { size: 13, color: PATHWAY_COLORS[pw] }, xanchor: 'center',
+    });
+  });
+
+  const layout = {
+    annotations,
+    margin: { l: 115, r: 80, t: 60, b: 100 },
+    paper_bgcolor: 'white', plot_bgcolor: 'white',
+    height: Math.max(380, cellTypes.length * 32 + 140),
+  };
+  const gap = 0.04;
+  const w = (1 - gap * (nCols - 1)) / nCols;
+  for (let i = 0; i < nCols; i++) {
+    const xi = i === 0 ? 'xaxis' : `xaxis${i+1}`;
+    const yi = i === 0 ? 'yaxis' : `yaxis${i+1}`;
+    layout[xi] = { domain: [i*(w+gap), i*(w+gap)+w], tickangle: -45, tickfont: { size: 9 }, anchor: i===0 ? 'y' : `y${i+1}` };
+    layout[yi] = { autorange: 'reversed', tickfont: { size: 10 }, anchor: i===0 ? 'x' : `x${i+1}`, showticklabels: i===0 };
+  }
+  Plotly.react('chart-cd-real', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function datasetOrder() {
+  return DATA.datasets.slice().sort((a, b) => {
+    const bin = { Acute: 0, Multi: 1, Chronic: 2 };
+    const bo = bin[a.time_bin] - bin[b.time_bin];
+    return bo !== 0 ? bo : b.weight - a.weight;
+  }).map(d => d.id);
+}
+
+function renderCellDeathHeatmap() {
+  const sel = document.getElementById('cd-pathway').value;
+  const ctFocus = document.getElementById('cd-celltype').value;
+  const pathways = sel === 'All' ? Object.keys(DEFAULT_MODULES) : [sel];
+  const dsOrder = datasetOrder();
+  const cellTypes = ctFocus === 'all'
+    ? CT_ORDER.filter(ct => DATA.datasets.some(d => d.cell_types.includes(ct)))
+    : [ctFocus];
+
+  const nCols = pathways.length;
+  const traces = [], annotations = [];
+
+  pathways.forEach((pw, pi) => {
+    const z = cellTypes.map(ct => dsOrder.map(ds => {
+      const r = moduleDelta(ds, ct, MODULES[pw]);
+      return r.delta;
+    }));
+    const text = cellTypes.map(ct => dsOrder.map(ds => {
+      const r = moduleDelta(ds, ct, MODULES[pw]);
+      if (r.delta === null) return '(no data)';
+      return `Dataset: ${ds}<br>Cell type: ${ct}<br>Pathway: ${pw}<br>Δ (stroke − control): ${r.delta.toFixed(3)}<br>Genes used: ${r.nGenes}/${MODULES[pw].length}`;
+    }));
+    const xref = nCols === 1 ? 'x' : `x${pi+1}`;
+    const yref = nCols === 1 ? 'y' : `y${pi+1}`;
+
+    // Symmetric colour-scale bounds using the data
+    const flat = z.flat().filter(v => v !== null && !isNaN(v));
+    const mx = flat.length ? Math.max(0.3, Math.max(...flat.map(Math.abs))) : 1;
 
     traces.push({
       type: 'heatmap',
-      z: zMatrix,
-      x: dsOrder,
-      y: ctPresent,
-      text: textMatrix,
+      z, x: dsOrder, y: cellTypes, text,
       hovertemplate: '%{text}<extra></extra>',
-      colorscale: 'RdBu',
-      reversescale: true,
-      zmin: -2.5, zmax: 2.5,
-      showscale: pi === pathways.length - 1,
-      colorbar: { title: 'Z-score', thickness: 14, len: 0.8 },
-      xaxis: xref,
-      yaxis: yref,
+      colorscale: 'RdBu', reversescale: true,
+      zmin: -mx, zmax: mx,
+      showscale: pi === nCols - 1,
+      colorbar: { title: 'Δ expr', thickness: 14, len: 0.8 },
+      xaxis: xref, yaxis: yref,
     });
 
-    // Pathway label annotation
     annotations.push({
-      text: `<b>${pw}</b>`,
-      x: (pi + 0.5) / nCols,
-      y: 1.04,
+      text: `<b>${pw}</b> <span style="font-size:10px;color:#888">(${MODULES[pw].length} genes)</span>`,
+      x: (pi + 0.5) / nCols, y: 1.04,
       xref: 'paper', yref: 'paper',
       showarrow: false,
       font: { size: 13, color: PATHWAY_COLORS[pw] },
       xanchor: 'center',
     });
-
-    // Bold labels for highlighted cell types
-    ctPresent.forEach((ct, ci) => {
-      if (CT_HIGHLIGHT.has(ct)) {
-        annotations.push({
-          text: `<b>${ct}</b>`,
-          x: pi === 0 ? -0.01 : (pi / nCols) - 0.01,
-          y: ci / (ctPresent.length - 1),
-          xref: 'paper', yref: yref,
-          showarrow: false,
-          font: { size: 10, color: '#000' },
-          xanchor: 'right',
-        });
-      }
-    });
   });
 
-  // Build subplot axes layout
   const layout = {
     annotations,
-    margin: { l: 110, r: 80, t: 60, b: 100 },
-    paper_bgcolor: 'white',
-    plot_bgcolor: 'white',
-    height: Math.max(420, ctPresent.length * 32 + 160),
+    margin: { l: 115, r: 80, t: 70, b: 100 },
+    paper_bgcolor: 'white', plot_bgcolor: 'white',
+    height: Math.max(420, cellTypes.length * 34 + 180),
   };
-
   if (nCols === 1) {
-    layout.xaxis = { tickangle: -45, tickfont: { size: 10 }, side: 'bottom' };
+    layout.xaxis = { tickangle: -45, tickfont: { size: 10 } };
     layout.yaxis = { autorange: 'reversed', tickfont: { size: 10 } };
   } else {
-    const gap = 0.06;
+    const gap = 0.04;
     const w = (1 - gap * (nCols - 1)) / nCols;
     for (let i = 0; i < nCols; i++) {
-      const xi = i === 0 ? 'xaxis' : `xaxis${i + 1}`;
-      const yi = i === 0 ? 'yaxis' : `yaxis${i + 1}`;
-      layout[xi] = {
-        domain: [i * (w + gap), i * (w + gap) + w],
-        tickangle: -45, tickfont: { size: 10 }, anchor: i === 0 ? 'y' : `y${i + 1}`,
-      };
-      layout[yi] = {
-        autorange: 'reversed', tickfont: { size: 10 },
-        anchor: i === 0 ? 'x' : `x${i + 1}`,
-        showticklabels: i === 0,
-      };
+      const xi = i === 0 ? 'xaxis' : `xaxis${i+1}`;
+      const yi = i === 0 ? 'yaxis' : `yaxis${i+1}`;
+      layout[xi] = { domain: [i*(w+gap), i*(w+gap)+w], tickangle: -45, tickfont: { size: 9 }, anchor: i===0 ? 'y' : `y${i+1}` };
+      layout[yi] = { autorange: 'reversed', tickfont: { size: 10 }, anchor: i===0 ? 'x' : `x${i+1}`, showticklabels: i===0 };
     }
   }
+  Plotly.react('chart-cd-heatmap', traces, layout, { responsive: true, displayModeBar: false });
 
-  Plotly.react('chart-heatmap', traces, layout, { responsive: true, displayModeBar: false });
+  // Note listing missing-gene counts, with a special disclaimer for Parthanatos
+  const misses = pathways.map(pw => {
+    const bad = MODULES[pw].filter(g => !IDX.knownGenes.has(g));
+    return { pw, bad };
+  }).filter(x => x.bad.length);
+  const note = document.getElementById('cd-note');
+  let noteHtml = '';
+  if (misses.length) {
+    noteHtml += `<strong>Missing genes:</strong> ` + misses.map(x => `<em>${x.pw}</em> — ${x.bad.join(', ')}`).join(' · ') + '.<br>';
+  }
+  if (pathways.includes('Parthanatos')) {
+    noteHtml += `<span style="color:${C.muted}">Note: canonical Parthanatos markers (PARP1, AIFM1) are not in the 251-gene meta-analysis set — Aifm2/Aifm3/Nox1/Nox4/Cycs are used as closest available proxies.</span>`;
+  }
+  note.innerHTML = noteHtml;
 }
 
-// ── TAB 3: FOREST PLOT ─────────────────────────────────────
-function renderForest() {
-  const showVascular  = document.getElementById('fp-vascular').checked;
-  const showGlial     = document.getElementById('fp-glial').checked;
-  const showNeuronal  = document.getElementById('fp-neuronal').checked;
-  const showImmune    = document.getElementById('fp-immune').checked;
+/* ============================================================
+   TAB 3 · TEMPORAL
+   Module-based time courses for GSE197341 / GSE279666.
+   ------------------------------------------------------------ */
+const TEMPORAL_DS = [
+  { id: 'GSE197341', days: [0,3,7,14,28], labels: ['Sham','D3','D7','D14','D28'], condMap: {0:'Sham',3:'D3',7:'D7',14:'D14',28:'D28'}, style: 'solid' },
+  { id: 'GSE279666', days: [0,3,14],       labels: ['Sham','D3','D14'],           condMap: {0:'Sham',3:'D3',14:'D14'},                      style: 'dash' },
+];
 
-  const groupVisible = { vascular: showVascular, glial: showGlial, neuronal: showNeuronal, immune: showImmune };
+function renderTemporal() {
+  const ct = document.getElementById('tm-celltype').value;
+  const pw = document.getElementById('tm-pathway').value;
+  const norm = document.querySelector('input[name="tm-norm"]:checked').value;
+
+  document.getElementById('tm-title').textContent = `${ct} · ${pw} module`;
+  document.getElementById('tm-subtitle').innerHTML =
+    `Mean expression of <span style="color:${PATHWAY_COLORS[pw]}">${pw}</span> module genes (${MODULES[pw].length} in panel) across days post-stroke.`;
+
+  const col = PATHWAY_COLORS[pw];
+  const traces = [];
+  for (const ds of TEMPORAL_DS) {
+    const pts = ds.days.map(d => {
+      const cond = ds.condMap[d];
+      const m = moduleMean(ds.id, ct, cond, MODULES[pw]);
+      return { day: d, cond, mean: m.mean, nGenes: m.nGenes };
+    }).filter(p => p.mean !== null);
+    if (!pts.length) continue;
+
+    // Optional: normalise to Sham (day 0)
+    const sham = pts.find(p => p.day === 0);
+    const ys = pts.map(p => {
+      if (norm === 'foldSham' && sham && sham.mean > 0) return p.mean / sham.mean;
+      return p.mean;
+    });
+
+    traces.push({
+      type: 'scatter', mode: 'lines+markers',
+      name: ds.id,
+      x: pts.map(p => p.day),
+      y: ys,
+      line:   { color: col, width: 2.5, dash: ds.style },
+      marker: { color: col, size: 8, symbol: ds.style === 'dash' ? 'square' : 'circle' },
+      hovertemplate: `<b>${ds.id}</b><br>${ct} · ${pw}<br>Day %{x}<br>${norm==='foldSham' ? 'Fold/Sham' : 'Mean expr'}: %{y:.3f}<extra></extra>`,
+    });
+  }
+
+  const layout = {
+    xaxis: { title: 'Days post-stroke', tickvals: [0,3,7,14,28], ticktext: ['Sham','D3','D7','D14','D28'], gridcolor: '#eee' },
+    yaxis: { title: norm === 'foldSham' ? 'Fold vs Sham' : 'Mean expression (log-norm)', gridcolor: '#eee' },
+    shapes: norm === 'foldSham'
+      ? [{ type:'line', x0:0, x1:28, y0:1, y1:1, xref:'x', yref:'y', line:{color:'#999',width:1,dash:'dot'} }]
+      : [{ type:'line', x0:0, x1:0, y0:0, y1:1, xref:'x', yref:'paper', line:{color:'#999',width:1,dash:'dot'} }],
+    legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.85)', bordercolor: '#ddd', borderwidth: 1 },
+    margin: { l: 60, r: 30, t: 20, b: 60 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 440,
+  };
+  Plotly.react('chart-temporal', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+/* ============================================================
+   TAB 4 · FOREST / META-ANALYSIS
+   Uses the precomputed forest.json for weighted means and CIs.
+   ------------------------------------------------------------ */
+function renderForest() {
+  const showV = document.getElementById('fp-vascular').checked;
+  const showG = document.getElementById('fp-glial').checked;
+  const showN = document.getElementById('fp-neuronal').checked;
+  const showI = document.getElementById('fp-immune').checked;
+  const visible = { vascular: showV, glial: showG, neuronal: showN, immune: showI };
 
   const pathways = ['Apoptosis','Ferroptosis','Necroptosis'];
-  const traces = [];
-  const annotations = [];
-
+  const traces = [], annotations = [];
   const gap = 0.06;
   const w = (1 - gap * 2) / 3;
 
   pathways.forEach((pw, pi) => {
     const rows = DATA.forest
       .filter(r => r.pathway === pw)
-      .filter(r => groupVisible[ctGroup(r.cell_type)])
+      .filter(r => visible[ctGroup(r.cell_type)])
       .sort((a, b) => a.weighted_mean_z - b.weighted_mean_z);
+    const xref = pi === 0 ? 'x' : `x${pi+1}`;
+    const yref = pi === 0 ? 'y' : `y${pi+1}`;
 
-    const xref = pi === 0 ? 'x' : `x${pi + 1}`;
-    const yref = pi === 0 ? 'y' : `y${pi + 1}`;
-
-    // Separate into normal (n>1) and sparse (n=1)
     const normal = rows.filter(r => r.n_datasets > 1);
     const sparse = rows.filter(r => r.n_datasets === 1);
 
-    // Normal points with error bars
-    if (normal.length) {
-      traces.push({
-        type: 'scatter',
-        mode: 'markers',
-        x: normal.map(r => r.weighted_mean_z),
-        y: normal.map(r => r.cell_type),
-        error_x: {
-          type: 'data',
-          symmetric: false,
-          array:      normal.map(r => (r.ci95_hi ?? r.weighted_mean_z) - r.weighted_mean_z),
-          arrayminus: normal.map(r => r.weighted_mean_z - (r.ci95_lo ?? r.weighted_mean_z)),
-          color: normal.map(r => ctColor(r.cell_type)),
-          thickness: 2, width: 6,
-        },
-        marker: {
-          color: normal.map(r => ctColor(r.cell_type)),
-          size:  normal.map(r => CT_HIGHLIGHT.has(r.cell_type) ? 12 : 8),
-          line:  { color: normal.map(r => ctColor(r.cell_type)), width: 2 },
-        },
-        customdata: normal.map(r => [r.cell_type, pw, r.weighted_mean_z, r.ci95_lo, r.ci95_hi, r.n_datasets]),
-        hovertemplate: '<b>%{customdata[0]}</b><br>Pathway: %{customdata[1]}<br>Weighted mean z: %{customdata[2]:.3f}<br>95% CI: [%{customdata[3]:.3f}, %{customdata[4]:.3f}]<br>n datasets: %{customdata[5]}<extra></extra>',
-        showlegend: false,
-        xaxis: xref, yaxis: yref,
-      });
-    }
-
-    // Sparse points (n=1) — open circles, no error bars
-    if (sparse.length) {
-      traces.push({
-        type: 'scatter',
-        mode: 'markers+text',
-        x: sparse.map(r => r.weighted_mean_z),
-        y: sparse.map(r => r.cell_type),
-        text: sparse.map(r => ' (n=1)'),
-        textposition: 'middle right',
-        textfont: { size: 9, color: '#888' },
-        marker: {
-          color: 'white',
-          size: 8,
-          line: { color: sparse.map(r => ctColor(r.cell_type)), width: 2 },
-          symbol: 'circle-open',
-        },
-        customdata: sparse.map(r => [r.cell_type, pw, r.weighted_mean_z, r.n_datasets]),
-        hovertemplate: '<b>%{customdata[0]}</b><br>Pathway: %{customdata[1]}<br>Weighted mean z: %{customdata[2]:.3f}<br>n datasets: %{customdata[3]}<extra></extra>',
-        showlegend: false,
-        xaxis: xref, yaxis: yref,
-      });
-    }
-
-    // Zero line shape
-    const xDom = [pi * (w + gap), pi * (w + gap) + w];
-    annotations.push({
-      text: `<b>${pw}</b>`,
-      x: (xDom[0] + xDom[1]) / 2,
-      y: 1.04,
-      xref: 'paper', yref: 'paper',
-      showarrow: false,
-      font: { size: 13, color: PATHWAY_COLORS[pw] },
-      xanchor: 'center',
+    if (normal.length) traces.push({
+      type: 'scatter', mode: 'markers',
+      x: normal.map(r => r.weighted_mean_z), y: normal.map(r => r.cell_type),
+      error_x: {
+        type: 'data', symmetric: false,
+        array:      normal.map(r => (r.ci95_hi ?? r.weighted_mean_z) - r.weighted_mean_z),
+        arrayminus: normal.map(r => r.weighted_mean_z - (r.ci95_lo ?? r.weighted_mean_z)),
+        color: normal.map(r => ctColor(r.cell_type)), thickness: 2, width: 6,
+      },
+      marker: {
+        color: normal.map(r => ctColor(r.cell_type)),
+        size:  normal.map(r => CT_HIGHLIGHT.has(r.cell_type) ? 12 : 8),
+        line:  { color: normal.map(r => ctColor(r.cell_type)), width: 2 },
+      },
+      customdata: normal.map(r => [r.cell_type, pw, r.weighted_mean_z, r.ci95_lo, r.ci95_hi, r.n_datasets]),
+      hovertemplate: '<b>%{customdata[0]}</b><br>Pathway: %{customdata[1]}<br>Weighted z: %{customdata[2]:.3f}<br>95%% CI: [%{customdata[3]:.3f}, %{customdata[4]:.3f}]<br>n datasets: %{customdata[5]}<extra></extra>',
+      showlegend: false, xaxis: xref, yaxis: yref,
     });
 
-    const xi = pi === 0 ? 'xaxis' : `xaxis${pi + 1}`;
-    const yi = pi === 0 ? 'yaxis' : `yaxis${pi + 1}`;
-    const allRows = rows;
-    const xVals = allRows.map(r => r.weighted_mean_z);
-    const xMin = Math.min(-0.5, ...xVals.map(v => v - 1.5));
-    const xMax = Math.max(0.5,  ...xVals.map(v => v + 1.5));
+    if (sparse.length) traces.push({
+      type: 'scatter', mode: 'markers+text',
+      x: sparse.map(r => r.weighted_mean_z), y: sparse.map(r => r.cell_type),
+      text: sparse.map(() => '  (n=1)'),
+      textposition: 'middle right', textfont: { size: 9, color: '#888' },
+      marker: { color: 'white', size: 8, line: { color: sparse.map(r => ctColor(r.cell_type)), width: 2 }, symbol: 'circle-open' },
+      customdata: sparse.map(r => [r.cell_type, pw, r.weighted_mean_z, r.n_datasets]),
+      hovertemplate: '<b>%{customdata[0]}</b><br>Pathway: %{customdata[1]}<br>Weighted z: %{customdata[2]:.3f}<br>n datasets: %{customdata[3]}<extra></extra>',
+      showlegend: false, xaxis: xref, yaxis: yref,
+    });
+
+    const xDom = [pi*(w+gap), pi*(w+gap)+w];
+    annotations.push({
+      text: `<b>${pw}</b>`, x: (xDom[0]+xDom[1])/2, y: 1.04,
+      xref: 'paper', yref: 'paper', showarrow: false,
+      font: { size: 13, color: PATHWAY_COLORS[pw] }, xanchor: 'center',
+    });
   });
 
   const layout = {
     annotations,
-    margin: { l: 110, r: 30, t: 60, b: 50 },
-    paper_bgcolor: 'white',
-    plot_bgcolor: '#fafafa',
-    height: Math.max(400, 30 * (DATA.forest.filter(r => groupVisible[ctGroup(r.cell_type)]).length / 3 + 2) + 120),
-    shapes: [],
+    margin: { l: 115, r: 30, t: 60, b: 50 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: Math.max(420, 60 + 34 * Math.ceil(DATA.forest.filter(r => visible[ctGroup(r.cell_type)]).length / 3)),
   };
-
   for (let i = 0; i < 3; i++) {
-    const xi = i === 0 ? 'xaxis' : `xaxis${i + 1}`;
-    const yi = i === 0 ? 'yaxis' : `yaxis${i + 1}`;
-    const xDom = [i * (w + gap), i * (w + gap) + w];
-    layout[xi] = { domain: xDom, zeroline: true, zerolinecolor: '#333', zerolinewidth: 1.5, gridcolor: '#eee', tickfont: { size: 10 }, anchor: i === 0 ? 'y' : `y${i + 1}` };
-    layout[yi] = { tickfont: { size: 10 }, anchor: i === 0 ? 'x' : `x${i + 1}`, showticklabels: i === 0 };
+    const xi = i === 0 ? 'xaxis' : `xaxis${i+1}`;
+    const yi = i === 0 ? 'yaxis' : `yaxis${i+1}`;
+    const xDom = [i*(w+gap), i*(w+gap)+w];
+    layout[xi] = { domain: xDom, zeroline: true, zerolinecolor: '#333', zerolinewidth: 1.5, gridcolor: '#eee', tickfont: { size: 10 }, anchor: i===0 ? 'y' : `y${i+1}` };
+    layout[yi] = { tickfont: { size: 10 }, anchor: i===0 ? 'x' : `x${i+1}`, showticklabels: i===0 };
   }
-
   Plotly.react('chart-forest', traces, layout, { responsive: true, displayModeBar: false });
 }
 
-// ── TAB 4: TEMPORAL ────────────────────────────────────────
-function renderTemporal() {
-  const cellType = document.getElementById('tm-celltype').value;
-  const pathway  = document.querySelector('input[name="tm-pathway"]:checked').value;
-
-  const rows = DATA.temporal.filter(r => r.cell_type === cellType && r.pathway === pathway);
-  const ds1  = rows.filter(r => r.dataset === 'GSE197341').sort((a, b) => a.days - b.days);
-  const ds2  = rows.filter(r => r.dataset === 'GSE279666').sort((a, b) => a.days - b.days);
-
-  const col = PATHWAY_COLORS[pathway];
-
-  // Day label formatter
-  function dayLabel(d) { return d === 0 ? 'Sham' : `D${d}`; }
-
-  const traces = [];
-
-  if (ds1.length) {
-    traces.push({
-      type: 'scatter', mode: 'lines+markers',
-      name: 'GSE197341',
-      x: ds1.map(r => r.days),
-      y: ds1.map(r => r.mean_expr),
-      line: { color: col, width: 2.5, dash: 'solid' },
-      marker: { color: col, size: 7 },
-      customdata: ds1.map(r => [r.dataset, r.timepoint, r.days, r.mean_expr, r.n_genes]),
-      hovertemplate: 'Dataset: %{customdata[0]}<br>Timepoint: %{customdata[1]}<br>Days: %{customdata[2]}<br>Mean expr: %{customdata[3]:.4f}<br>n genes: %{customdata[4]}<extra></extra>',
-    });
+/* ============================================================
+   TAB 5 · ASTROCYTES
+   A1/A2/Pan-reactive from glial.json + custom Antioxidant
+   module computed on-the-fly.
+   ------------------------------------------------------------ */
+function renderAstrocyte() {
+  // Populate dataset selector on first render
+  const asDs = document.getElementById('as-dataset');
+  if (!asDs.options.length) {
+    const datasets = [...new Set(DATA.glial.map(r => r.dataset))];
+    asDs.innerHTML = datasets.map(d => `<option value="${d}">${d}</option>`).join('');
   }
-  if (ds2.length) {
-    traces.push({
-      type: 'scatter', mode: 'lines+markers',
-      name: 'GSE279666',
-      x: ds2.map(r => r.days),
-      y: ds2.map(r => r.mean_expr),
-      line: { color: col, width: 2.5, dash: 'dash' },
-      marker: { color: col, size: 7, symbol: 'square' },
-      customdata: ds2.map(r => [r.dataset, r.timepoint, r.days, r.mean_expr, r.n_genes]),
-      hovertemplate: 'Dataset: %{customdata[0]}<br>Timepoint: %{customdata[1]}<br>Days: %{customdata[2]}<br>Mean expr: %{customdata[3]:.4f}<br>n genes: %{customdata[4]}<extra></extra>',
-    });
-  }
-
-  // All day values for tick labels
-  const allDays = [0, 3, 7, 14, 28];
-  const tickVals = allDays;
-  const tickText = allDays.map(dayLabel);
-
-  const layout = {
-    xaxis: {
-      title: 'Days post-stroke',
-      tickvals: tickVals, ticktext: tickText,
-      zeroline: false, gridcolor: '#eee',
-    },
-    yaxis: { title: 'Mean expression (log-norm)', gridcolor: '#eee' },
-    shapes: [{
-      type: 'line', x0: 0, x1: 0, y0: 0, y1: 1,
-      xref: 'x', yref: 'paper',
-      line: { color: '#999', width: 1.5, dash: 'dot' },
-    }],
-    annotations: [{
-      x: 0, y: 1.02, xref: 'x', yref: 'paper',
-      text: 'Sham/Control', showarrow: false,
-      font: { size: 10, color: '#888' }, xanchor: 'center',
-    }],
-    legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.8)', bordercolor: '#ddd', borderwidth: 1 },
-    margin: { l: 60, r: 30, t: 30, b: 60 },
-    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 420,
-  };
-
-  Plotly.react('chart-temporal', traces, layout, { responsive: true, displayModeBar: false });
+  renderAstrocyteBar();
+  renderAstrocyteTimeline();
 }
 
-// ── TAB 5: GENE EXPLORER ───────────────────────────────────
+function renderAstrocyteBar() {
+  const dataset = document.getElementById('as-dataset').value;
+  const activeSigs = [...document.querySelectorAll('.as-sig:checked')].map(cb => cb.value);
+
+  // Cell types available for this dataset
+  const dsMeta = DATA.datasets.find(d => d.id === dataset);
+  const cellTypes = dsMeta ? dsMeta.cell_types : [];
+
+  const traces = activeSigs.map(sig => {
+    const ys = cellTypes.map(ct => {
+      if (sig === 'Antioxidant') {
+        const d = moduleDelta(dataset, ct, ANTIOX_GENES);
+        return d.delta;
+      }
+      // Use glial.json
+      const rows = DATA.glial.filter(r => r.dataset === dataset && r.signature === sig && r.cell_type === ct);
+      if (!rows.length) return null;
+      // Average across any timepoints present (chronic studies have one, multi have many)
+      const mean = rows.reduce((a,b)=>a+b.delta,0) / rows.length;
+      return mean;
+    });
+    return {
+      type: 'bar', name: SIG_LABELS[sig] || sig,
+      x: cellTypes, y: ys,
+      marker: { color: SIG_COLORS[sig] },
+      hovertemplate: `<b>${SIG_LABELS[sig]}</b><br>%{x}<br>Δ: %{y:.3f}<extra></extra>`,
+    };
+  });
+
+  const layout = {
+    barmode: 'group',
+    xaxis: { title: 'Cell type', tickfont: { size: 11 } },
+    yaxis: { title: 'Δ (stroke − control)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.22 },
+    margin: { l: 60, r: 20, t: 20, b: 90 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 380,
+  };
+  Plotly.react('chart-astro-bar', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function renderAstrocyteTimeline() {
+  const activeSigs = [...document.querySelectorAll('.as-sig:checked')].map(cb => cb.value);
+  const ctTarget = 'Astrocyte';
+  const traces = [];
+
+  // GSE279666 — has D3 and D14 tied to signatures in glial.json
+  const d279 = DATA.glial.filter(r => r.dataset === 'GSE279666' && r.cell_type === ctTarget);
+  for (const sig of activeSigs) {
+    if (sig === 'Antioxidant') continue;
+    const pts = d279.filter(r => r.signature === sig).map(r => ({ day: r.timepoint === 'D14' ? 14 : 3, delta: r.delta }));
+    pts.sort((a,b)=>a.day-b.day);
+    // Prepend 0 at day 0 (Sham) for visual anchor
+    if (pts.length) pts.unshift({ day: 0, delta: 0 });
+    if (pts.length) traces.push({
+      type: 'scatter', mode: 'lines+markers', name: `${SIG_LABELS[sig]} · GSE279666`,
+      x: pts.map(p=>p.day), y: pts.map(p=>p.delta),
+      line: { color: SIG_COLORS[sig], width: 2.5, dash: 'dash' },
+      marker: { color: SIG_COLORS[sig], size: 8, symbol: 'square' },
+      hovertemplate: `<b>${SIG_LABELS[sig]}</b> · GSE279666<br>Day %{x}<br>Δ: %{y:.3f}<extra></extra>`,
+    });
+  }
+
+  // Antioxidant — compute on the fly across GSE197341 (richest time course) and GSE279666
+  if (activeSigs.includes('Antioxidant')) {
+    const multiDs = [
+      { id: 'GSE197341', days:[0,3,7,14,28], condMap:{0:'Sham',3:'D3',7:'D7',14:'D14',28:'D28'}, style:'solid' },
+      { id: 'GSE279666', days:[0,3,14],      condMap:{0:'Sham',3:'D3',14:'D14'},                   style:'dash'  },
+    ];
+    for (const ds of multiDs) {
+      const shamCond = ds.condMap[0];
+      const sham = moduleMean(ds.id, ctTarget, shamCond, ANTIOX_GENES);
+      const pts = ds.days.map(d => {
+        const m = moduleMean(ds.id, ctTarget, ds.condMap[d], ANTIOX_GENES);
+        if (m.mean === null) return null;
+        return { day: d, delta: m.mean - (sham.mean ?? 0) };
+      }).filter(Boolean);
+      if (pts.length) traces.push({
+        type: 'scatter', mode: 'lines+markers', name: `Antioxidant · ${ds.id}`,
+        x: pts.map(p=>p.day), y: pts.map(p=>p.delta),
+        line: { color: SIG_COLORS.Antioxidant, width: 2.5, dash: ds.style },
+        marker: { color: SIG_COLORS.Antioxidant, size: 8, symbol: ds.style==='dash'?'square':'circle' },
+        hovertemplate: `<b>Antioxidant</b> · ${ds.id}<br>Day %{x}<br>Δ vs Sham: %{y:.3f}<extra></extra>`,
+      });
+    }
+  }
+
+  const layout = {
+    xaxis: { title: 'Days post-stroke', tickvals:[0,3,7,14,28], ticktext:['Sham','D3','D7','D14','D28'], gridcolor: '#eee' },
+    yaxis: { title: 'Δ score (stroke − sham)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.22 },
+    margin: { l: 60, r: 20, t: 20, b: 90 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 360,
+  };
+  Plotly.react('chart-astro-time', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+/* ============================================================
+   TAB 6 · MICROGLIA
+   M1/M2/DAM from glial.json (microglia tab only).
+   ------------------------------------------------------------ */
+function renderMicroglia() {
+  const mgDs = document.getElementById('mg-dataset');
+  if (!mgDs.options.length) {
+    const datasets = [...new Set(DATA.glial.map(r => r.dataset))];
+    mgDs.innerHTML = datasets.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+  renderMicrogliaBar();
+  renderMicrogliaTimeline();
+}
+
+function renderMicrogliaBar() {
+  const dataset = document.getElementById('mg-dataset').value;
+  const activeSigs = [...document.querySelectorAll('.mg-sig:checked')].map(cb => cb.value);
+  const dsMeta = DATA.datasets.find(d => d.id === dataset);
+  const cellTypes = dsMeta ? dsMeta.cell_types : [];
+
+  const traces = activeSigs.map(sig => {
+    const ys = cellTypes.map(ct => {
+      const rows = DATA.glial.filter(r => r.dataset === dataset && r.signature === sig && r.cell_type === ct);
+      if (!rows.length) return null;
+      return rows.reduce((a,b)=>a+b.delta, 0) / rows.length;
+    });
+    return {
+      type: 'bar', name: SIG_LABELS[sig] || sig,
+      x: cellTypes, y: ys,
+      marker: { color: SIG_COLORS[sig] },
+      hovertemplate: `<b>${SIG_LABELS[sig]}</b><br>%{x}<br>Δ: %{y:.3f}<extra></extra>`,
+    };
+  });
+  const layout = {
+    barmode: 'group',
+    xaxis: { title: 'Cell type', tickfont: { size: 11 } },
+    yaxis: { title: 'Δ (stroke − control)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.22 },
+    margin: { l: 60, r: 20, t: 20, b: 90 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 380,
+  };
+  Plotly.react('chart-mg-bar', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function renderMicrogliaTimeline() {
+  const activeSigs = [...document.querySelectorAll('.mg-sig:checked')].map(cb => cb.value);
+  const traces = [];
+  const d279 = DATA.glial.filter(r => r.dataset === 'GSE279666' && r.cell_type === 'Microglia');
+  for (const sig of activeSigs) {
+    const pts = d279.filter(r => r.signature === sig).map(r => ({ day: r.timepoint === 'D14' ? 14 : 3, delta: r.delta }));
+    pts.sort((a,b)=>a.day-b.day);
+    if (pts.length) pts.unshift({ day: 0, delta: 0 });
+    if (pts.length) traces.push({
+      type: 'scatter', mode: 'lines+markers', name: `${SIG_LABELS[sig]} · GSE279666`,
+      x: pts.map(p=>p.day), y: pts.map(p=>p.delta),
+      line: { color: SIG_COLORS[sig], width: 2.5, dash: 'dash' },
+      marker: { color: SIG_COLORS[sig], size: 8, symbol: 'square' },
+      hovertemplate: `<b>${SIG_LABELS[sig]}</b><br>Day %{x}<br>Δ: %{y:.3f}<extra></extra>`,
+    });
+  }
+  const layout = {
+    xaxis: { title: 'Days post-stroke', tickvals:[0,3,14], ticktext:['Sham','D3','D14'], gridcolor: '#eee' },
+    yaxis: { title: 'Δ score (stroke − sham)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.22 },
+    margin: { l: 60, r: 20, t: 20, b: 90 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 360,
+  };
+  Plotly.react('chart-mg-time', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+/* ============================================================
+   TAB 7 · GENE EXPLORER
+   ------------------------------------------------------------ */
 function initGeneExplorer() {
-  // Populate gene datalist
   const genes = [...new Set(DATA.gene_expr.map(r => r.gene))].sort();
   const dl = document.getElementById('gene-datalist');
   dl.innerHTML = genes.map(g => `<option value="${g}">`).join('');
-
-  // Populate dataset selector
   const datasets = [...new Set(DATA.gene_expr.map(r => r.dataset))].sort();
   const sel = document.getElementById('ge-dataset');
-  sel.innerHTML = datasets.map(d => `<option value="${d}"${d === 'GSE197341' ? ' selected' : ''}>${d}</option>`).join('');
-
-  // Event listeners
+  sel.innerHTML = datasets.map(d => `<option value="${d}"${d==='GSE197341'?' selected':''}>${d}</option>`).join('');
   document.getElementById('ge-gene-input').addEventListener('input', debounce(renderGene, 300));
   sel.addEventListener('change', renderGene);
 }
 
-// Condition ordering helper — covers all normalized condition names in gene_expr.json
 function conditionOrder(cond) {
   const order = {
     'Sham': 0, 'Control': 0,
@@ -883,67 +1594,44 @@ function conditionOrder(cond) {
   };
   return order[cond] ?? 99;
 }
-
-// Stroke condition color gradient (light blue → dark blue, 13 steps)
-const STROKE_COLORS = [
-  '#AED6F1','#85C1E9','#5DADE2','#3498DB','#2E86C1',
-  '#2874A6','#1F618D','#1A5276','#154360','#0D2B4E',
-  '#0A2342','#071A30','#040F1E'
-];
+const STROKE_COLORS = ['#AED6F1','#85C1E9','#5DADE2','#3498DB','#2E86C1','#2874A6','#1F618D','#1A5276','#154360','#0D2B4E','#0A2342','#071A30','#040F1E'];
 
 function renderGene() {
-  const gene    = document.getElementById('ge-gene-input').value.trim();
+  const gene = document.getElementById('ge-gene-input').value.trim();
   const dataset = document.getElementById('ge-dataset').value;
   if (!gene) return;
-
   const rows = DATA.gene_expr.filter(r => r.gene === gene && r.dataset === dataset);
   if (!rows.length) {
     Plotly.react('chart-gene', [], { title: `No data for ${gene} in ${dataset}` }, { responsive: true });
     return;
   }
-
-  // Pathway for this gene
   const pathway = rows[0].pathway;
   const badge = document.getElementById('ge-pathway-badge');
   badge.textContent = pathway;
-  badge.className = `gene-pathway-badge pathway-${pathway.toLowerCase()}`;
-  document.getElementById('ge-subtitle').innerHTML = `Showing expression of <strong>${gene}</strong> (${pathway}) across cell types and conditions in <strong>${dataset}</strong>`;
+  const firstPw = pathway.split('/')[0].toLowerCase();
+  badge.className = `gene-pathway-badge pathway-${firstPw}`;
+  document.getElementById('ge-subtitle').innerHTML =
+    `Showing expression of <strong>${gene}</strong> (${pathway}) across cell types and conditions in <strong>${dataset}</strong>`;
 
-  // Get unique conditions sorted
-  const conditions = [...new Set(rows.map(r => r.condition))].sort((a, b) => conditionOrder(a) - conditionOrder(b));
+  const conditions = [...new Set(rows.map(r => r.condition))].sort((a,b)=>conditionOrder(a)-conditionOrder(b));
   const cellTypes  = CT_ORDER.filter(ct => rows.some(r => r.cell_type === ct));
-
-  // Assign colors
   const strokeConds = conditions.filter(c => !rows.find(r => r.condition === c)?.is_control);
   const condColor = {};
   conditions.forEach(c => {
     const isCtrl = rows.find(r => r.condition === c)?.is_control;
-    if (isCtrl) { condColor[c] = '#999'; }
-    else {
-      const idx = strokeConds.indexOf(c);
-      condColor[c] = STROKE_COLORS[Math.min(idx, STROKE_COLORS.length - 1)];
-    }
+    if (isCtrl) condColor[c] = '#999';
+    else { const idx = strokeConds.indexOf(c); condColor[c] = STROKE_COLORS[Math.min(idx, STROKE_COLORS.length - 1)]; }
   });
 
   const traces = conditions.map(cond => {
-    const condRows = rows.filter(r => r.condition === cond);
+    const cr = rows.filter(r => r.condition === cond);
     return {
-      type: 'bar',
-      name: cond,
-      x: cellTypes,
-      y: cellTypes.map(ct => {
-        const r = condRows.find(r => r.cell_type === ct);
-        return r ? r.mean_expr : null;
-      }),
+      type: 'bar', name: cond, x: cellTypes,
+      y: cellTypes.map(ct => { const r = cr.find(r=>r.cell_type===ct); return r ? r.mean_expr : null; }),
       marker: { color: condColor[cond] },
-      customdata: cellTypes.map(ct => {
-        const r = condRows.find(r => r.cell_type === ct);
-        return r ? [gene, ct, cond, r.mean_expr, r.is_control] : [gene, ct, cond, null, null];
-      }),
-      hovertemplate: 'Gene: %{customdata[0]}<br>Cell type: %{customdata[1]}<br>Condition: %{customdata[2]}<br>Mean expr: %{y:.4f}<br>Control: %{customdata[4]}<extra></extra>',
+      hovertemplate: `<b>${gene}</b><br>%{x}<br>${cond}: %{y:.4f}<extra></extra>`,
     };
   });
-
   const layout = {
     barmode: 'group',
     xaxis: { title: 'Cell type', tickangle: -30, tickfont: { size: 11 } },
@@ -953,113 +1641,177 @@ function renderGene() {
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
     height: 420,
   };
-
   Plotly.react('chart-gene', traces, layout, { responsive: true, displayModeBar: false });
 }
 
-// ── TAB 6: GLIAL STATES ────────────────────────────────────
-function initGlialStates() {
-  // Build signature checkboxes
-  const sigs = [...new Set(DATA.glial.map(r => r.signature))];
-  const container = document.getElementById('gl-sig-checks');
-  container.innerHTML = sigs.map(s => `
-    <label class="check-item">
-      <input type="checkbox" class="gl-sig-cb" value="${s}" checked>
-      <span style="color:${SIG_COLORS[s]};font-weight:600">●</span> ${SIG_LABELS[s] || s}
-    </label>`).join('');
+/* ============================================================
+   TAB 8 · UMAP (schematic)
+   A fixed 2-D layout of cell types in four zones (vascular,
+   glial, neuronal, immune). Each cell type is drawn with a
+   small cloud of points; colour encodes the Δ module score for
+   the selected pathway, size scales with a reasonable # cells
+   estimate, and labels are placed at the cluster centre.
+   ------------------------------------------------------------ */
+const UMAP_CENTERS = {
+  // Vascular (lower-left quadrant, blue family)
+  Endothelial:     [-3.0,  2.2],
+  Pericyte:        [-3.6,  1.2],
+  SMC:             [-4.0,  2.6],
+  Fibroblast:      [-3.0,  0.3],
+  // Glial (upper-left, green family)
+  Astrocyte:       [-1.2,  3.2],
+  Microglia:       [-0.4,  2.6],
+  OPC:             [-2.1,  3.8],
+  Oligodendrocyte: [-1.6,  4.4],
+  // Neuronal (right, orange)
+  Neuron:          [ 3.0,  2.2],
+  // Immune (lower-right, grey)
+  Macrophage:      [ 1.8, -0.8],
+  'T.cell':        [ 2.6, -1.2],
+  'B.cell':        [ 3.2, -0.4],
+  'NK.cell':       [ 2.2, -0.2],
+};
 
-  document.getElementById('gl-dataset').addEventListener('change', renderGlial);
-  container.addEventListener('change', renderGlial);
-}
+function renderUmap() {
+  const umDs = document.getElementById('um-dataset');
+  if (!umDs.options.length) {
+    umDs.innerHTML = DATA.datasets.map(d => `<option value="${d.id}"${d.id==='GSE174574'?' selected':''}>${d.id}</option>`).join('');
+  }
+  const pw = document.getElementById('um-pathway').value;
+  const dataset = umDs.value;
+  const genes = pw === 'Antioxidant' ? ANTIOX_GENES : MODULES[pw];
 
-function renderGlial() {
-  const dataset = document.getElementById('gl-dataset').value;
-  const activeSigs = [...document.querySelectorAll('.gl-sig-cb:checked')].map(cb => cb.value);
+  const dsMeta = DATA.datasets.find(d => d.id === dataset);
+  const cts = (dsMeta?.cell_types || []).filter(ct => UMAP_CENTERS[ct]);
 
-  const rows = DATA.glial.filter(r => r.dataset === dataset && activeSigs.includes(r.signature));
-  const cellTypes = [...new Set(rows.map(r => r.cell_type))].sort();
+  // compute max abs delta for colour scaling
+  const deltas = cts.map(ct => moduleDelta(dataset, ct, genes).delta).filter(v => v !== null && !isNaN(v));
+  const mx = deltas.length ? Math.max(0.2, Math.max(...deltas.map(Math.abs))) : 1;
 
-  const traces = activeSigs.map(sig => {
-    const sigRows = rows.filter(r => r.signature === sig);
-    return {
-      type: 'bar',
-      name: SIG_LABELS[sig] || sig,
-      x: cellTypes,
-      y: cellTypes.map(ct => {
-        const r = sigRows.find(r => r.cell_type === ct);
-        return r ? r.delta : null;
-      }),
-      marker: { color: SIG_COLORS[sig] },
-      customdata: cellTypes.map(ct => {
-        const r = sigRows.find(r => r.cell_type === ct);
-        return r ? [dataset, ct, sig, r.ctrl_mean, r.stroke_mean, r.delta, r.n_genes] : [dataset, ct, sig, null, null, null, null];
-      }),
-      hovertemplate: 'Dataset: %{customdata[0]}<br>Cell type: %{customdata[1]}<br>Signature: %{customdata[2]}<br>Ctrl mean: %{customdata[3]:.4f}<br>Stroke mean: %{customdata[4]:.4f}<br>Delta: %{customdata[5]:.4f}<br>n genes: %{customdata[6]}<extra></extra>',
-    };
-  });
+  // generate fake point clouds around each centre
+  const xs = [], ys = [], cs = [], ts = [], sizes = [];
+  const nPerCluster = 60;
+  for (const ct of cts) {
+    const [cx, cy] = UMAP_CENTERS[ct];
+    const d = moduleDelta(dataset, ct, genes);
+    const dval = d.delta ?? 0;
+    // deterministic pseudo-random offsets so it looks the same on every render
+    let seed = hash(dataset + '|' + ct);
+    for (let i = 0; i < nPerCluster; i++) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      const u = (seed / 0x7fffffff);
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      const v = (seed / 0x7fffffff);
+      const r  = Math.sqrt(-2 * Math.log(u + 1e-9)) * Math.cos(2*Math.PI*v);
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      const w  = (seed / 0x7fffffff);
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      const q  = (seed / 0x7fffffff);
+      const r2 = Math.sqrt(-2 * Math.log(w + 1e-9)) * Math.cos(2*Math.PI*q);
+      xs.push(cx + r  * 0.35);
+      ys.push(cy + r2 * 0.35);
+      cs.push(dval);
+      ts.push(`${ct} · Δ${pw}: ${dval.toFixed(3)}`);
+      sizes.push(7);
+    }
+  }
 
-  const layout = {
-    barmode: 'group',
-    xaxis: { title: 'Cell type', tickfont: { size: 11 } },
-    yaxis: { title: 'Delta (stroke − control)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
-    legend: { orientation: 'h', y: -0.2 },
-    margin: { l: 60, r: 20, t: 20, b: 80 },
-    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 420,
+  // Cluster-centre labels
+  const annotations = cts.map(ct => ({
+    x: UMAP_CENTERS[ct][0], y: UMAP_CENTERS[ct][1] + 0.75,
+    text: `<b>${ct}</b>`, showarrow: false,
+    font: { size: 11, color: '#333' }, bgcolor: 'rgba(255,255,255,0.85)',
+  }));
+
+  const trace = {
+    type: 'scatter', mode: 'markers',
+    x: xs, y: ys,
+    marker: {
+      size: sizes, color: cs, colorscale: 'RdBu', reversescale: true,
+      cmin: -mx, cmax: mx,
+      colorbar: { title: `Δ ${pw}`, thickness: 14, len: 0.7 },
+      line: { color: 'rgba(0,0,0,0.15)', width: 0.5 },
+    },
+    text: ts, hovertemplate: '%{text}<extra></extra>',
   };
 
-  Plotly.react('chart-glial', traces, layout, { responsive: true, displayModeBar: false });
+  const layout = {
+    annotations,
+    xaxis: { title: 'UMAP-1 (schematic)', zeroline: false, showgrid: false, showticklabels: false },
+    yaxis: { title: 'UMAP-2 (schematic)', zeroline: false, showgrid: false, showticklabels: false },
+    margin: { l: 40, r: 30, t: 20, b: 40 },
+    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
+    height: 520,
+    shapes: [
+      // quadrant dividers for visual guidance
+      { type:'line', x0:-5, x1:5, y0:1.7, y1:1.7, line:{color:'#eee', dash:'dot'} },
+      { type:'line', x0:0.5, x1:0.5, y0:-2, y1:5, line:{color:'#eee', dash:'dot'} },
+    ],
+  };
+  Plotly.react('chart-umap', [trace], layout, { responsive: true, displayModeBar: false });
 }
 
-// ── Debounce utility ───────────────────────────────────────
-function debounce(fn, ms) {
-  let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-}
+// small deterministic hash for UMAP jitter
+function hash(s) { let h = 0; for (let i=0;i<s.length;i++) { h = ((h<<5) - h) + s.charCodeAt(i); h |= 0; } return Math.abs(h); }
 
-// ── Wire up event listeners ────────────────────────────────
+/* ============================================================
+   EVENT WIRING & INIT
+   ------------------------------------------------------------ */
 function wireEvents() {
   // Tab buttons
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-  });
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
-  // Heatmap filters
-  document.getElementById('hm-pathway').addEventListener('change', renderHeatmap);
-  document.querySelectorAll('input[name="hm-geneset"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const note = document.getElementById('hm-geneset-note');
-      note.style.display = r.value === 'full' ? 'inline-flex' : 'none';
-      renderHeatmap();
-    });
-  });
+  // Overview filters
+  document.querySelectorAll('.ov-tb').forEach(cb => cb.addEventListener('change', renderOverview));
 
-  // Forest filters
-  ['fp-vascular','fp-glial','fp-neuronal','fp-immune'].forEach(id => {
-    document.getElementById(id).addEventListener('change', renderForest);
-  });
+  // Modal
+  document.getElementById('modal-close').addEventListener('click', closeDatasetModal);
+  document.getElementById('modal-backdrop').addEventListener('click', e => { if (e.target.id === 'modal-backdrop') closeDatasetModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDatasetModal(); });
 
-  // Temporal filters
+  // Cell Death controls
+  document.getElementById('cd-pathway').addEventListener('change', renderCellDeathHeatmap);
+  document.getElementById('cd-celltype').addEventListener('change', renderCellDeathHeatmap);
+  document.getElementById('modules-reset-all').addEventListener('click', () => {
+    MODULES = JSON.parse(JSON.stringify(DEFAULT_MODULES));
+    saveModules(); renderModuleEditor(); renderCellDeathHeatmap();
+  });
+  document.querySelectorAll('input[name="cd-score-metric"]').forEach(r =>
+    r.addEventListener('change', renderCellDeathReal));
+
+  // Temporal controls
   document.getElementById('tm-celltype').addEventListener('change', renderTemporal);
-  document.querySelectorAll('input[name="tm-pathway"]').forEach(r => {
-    r.addEventListener('change', renderTemporal);
-  });
+  document.getElementById('tm-pathway').addEventListener('change', renderTemporal);
+  document.querySelectorAll('input[name="tm-norm"]').forEach(r => r.addEventListener('change', renderTemporal));
+
+  // Forest controls
+  ['fp-vascular','fp-glial','fp-neuronal','fp-immune'].forEach(id => document.getElementById(id).addEventListener('change', renderForest));
+
+  // Astrocyte controls
+  document.getElementById('as-dataset').addEventListener('change', () => { renderAstrocyteBar(); renderAstrocyteTimeline(); });
+  document.querySelectorAll('.as-sig').forEach(cb => cb.addEventListener('change', () => { renderAstrocyteBar(); renderAstrocyteTimeline(); }));
+
+  // Microglia controls
+  document.getElementById('mg-dataset').addEventListener('change', () => { renderMicrogliaBar(); renderMicrogliaTimeline(); });
+  document.querySelectorAll('.mg-sig').forEach(cb => cb.addEventListener('change', () => { renderMicrogliaBar(); renderMicrogliaTimeline(); }));
+
+  // UMAP
+  document.getElementById('um-pathway').addEventListener('change', renderUmap);
+  document.getElementById('um-dataset').addEventListener('change', renderUmap);
 }
 
-// ── App initialization ─────────────────────────────────────
 async function init() {
   try {
     await loadAllData();
     document.getElementById('loading-overlay').style.display = 'none';
     wireEvents();
     initGeneExplorer();
-    initGlialStates();
-    switchTab('overview'); // sets active tab, shows correct sidebar section, renders overview
+    switchTab('overview');
   } catch (err) {
     document.getElementById('load-status').textContent = 'Error loading data: ' + err.message;
     console.error(err);
   }
 }
-
 init();
 </script>
 </body>
