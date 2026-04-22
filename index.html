@@ -312,9 +312,9 @@
       </div>
     </div>
 
-    <!-- CELL DEATH: pathway + scoring mode -->
+    <!-- CELL DEATH: pathway focus (optional) + cell-type focus (optional) -->
     <div id="sf-celldeath" class="sidebar-section" style="display:none">
-      <label>Pathway</label>
+      <label>Pathway focus</label>
       <select id="cd-pathway">
         <option value="All">All five pathways</option>
         <option value="Apoptosis">Apoptosis</option>
@@ -334,6 +334,9 @@
         <option value="Pericyte">Pericyte</option>
         <option value="Oligodendrocyte">Oligodendrocyte</option>
         <option value="OPC">OPC</option>
+        <option value="Fibroblast">Fibroblast</option>
+        <option value="Macrophage">Macrophage</option>
+        <option value="SMC">SMC</option>
       </select>
     </div>
 
@@ -349,6 +352,8 @@
         <option value="Oligodendrocyte">Oligodendrocyte</option>
         <option value="OPC">OPC</option>
         <option value="Fibroblast">Fibroblast</option>
+        <option value="Macrophage">Macrophage</option>
+        <option value="SMC">SMC</option>
       </select>
 
       <label style="margin-top:6px">Pathway module</label>
@@ -360,11 +365,21 @@
         <option value="Parthanatos">Parthanatos</option>
       </select>
 
+      <label style="margin-top:6px">Datasets</label>
+      <div id="tm-datasets" class="check-group" style="max-height:170px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:6px 8px;background:var(--bg)">
+        <!-- populated at render time -->
+      </div>
+
       <label style="margin-top:6px">Normalization</label>
       <div class="radio-group">
         <label class="radio-item"><input type="radio" name="tm-norm" value="absolute" checked> Absolute (log-norm)</label>
         <label class="radio-item"><input type="radio" name="tm-norm" value="foldSham"> Fold-change vs Sham</label>
+        <label class="radio-item"><input type="radio" name="tm-norm" value="delta"> Δ (stroke − sham)</label>
       </div>
+
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:6px">
+        Gene list = current pathway module (editable in the Cell Death tab).
+      </p>
     </div>
 
     <!-- FOREST -->
@@ -407,9 +422,30 @@
 
     <!-- GENE EXPLORER -->
     <div id="sf-gene" class="sidebar-section" style="display:none">
-      <label>Dataset</label>
-      <select id="ge-dataset"></select>
-      <p style="font-size:0.72rem;color:var(--muted);margin-top:4px">Use the search box in the chart panel to select a gene.</p>
+      <label>Cell Type</label>
+      <select id="ge-celltype">
+        <option value="all">All cell types</option>
+        <option value="Neuron">Neuron</option>
+        <option value="Astrocyte">Astrocyte</option>
+        <option value="Microglia">Microglia</option>
+        <option value="Oligodendrocyte">Oligodendrocyte</option>
+        <option value="OPC">OPC</option>
+        <option value="Endothelial">Endothelial</option>
+        <option value="Pericyte">Pericyte</option>
+        <option value="Fibroblast">Fibroblast</option>
+        <option value="SMC">SMC</option>
+        <option value="Macrophage">Macrophage</option>
+        <option value="T.cell">T cell</option>
+        <option value="B.cell">B cell</option>
+        <option value="NK.cell">NK cell</option>
+      </select>
+
+      <label style="margin-top:8px">Display</label>
+      <div class="radio-group">
+        <label class="radio-item"><input type="radio" name="ge-mode" value="delta" checked> Δ vs sham (stroke − control)</label>
+        <label class="radio-item"><input type="radio" name="ge-mode" value="absolute"> Absolute expression</label>
+      </div>
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:6px">Search any gene in the box above the chart. Columns = dataset · day post-stroke (chronological).</p>
     </div>
 
     <!-- UMAP -->
@@ -484,34 +520,20 @@
         <strong>Research question:</strong> Which of the five major programmed-death pathways —
         <em>apoptosis</em>, <em>ferroptosis</em>, <em>necroptosis</em>, <em>necrosis / pyroptosis</em>,
         and <em>parthanatos</em> — dominates in each brain cell population after ischemic stroke,
-        and does this change between the acute (D1-D3) and sub-acute / chronic (D7-D28) phases?
-        The panel below shows curated-panel module scores computed across 9 harmonized datasets
-        (authoritative view); the interactive editor further below lets you redefine any gene
-        panel and recompute the scores on the fly.
+        and how does this change from acute (D1-D3) through sub-acute (D4-D14) to chronic (>D14) phases?
+        Every score below is computed live from the editable gene panels — add or remove genes and
+        the heatmap updates instantly.
       </div>
 
-      <!-- AUTHORITATIVE HEATMAP (precomputed from pipeline) -->
-      <div class="chart-panel">
-        <div class="chart-title">Cross-dataset Δ-score heatmap <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(precomputed curated panels)</span></div>
-        <div class="chart-subtitle">
-          Rows: cell types; columns: datasets ordered Acute → Multi → Chronic. Red = up in stroke, blue = down.
-          Scores are mean-of-core-gene expression differences (<em>stroke − control</em>) from the
-          upstream R pipeline — this view is the reference for the R01 renewal.
-        </div>
-        <div class="chart-note" style="margin-bottom:6px">
-          <label style="font-size:0.78rem"><input type="radio" name="cd-score-metric" value="delta" checked> Δ expression</label>
-          <label style="font-size:0.78rem;margin-left:14px"><input type="radio" name="cd-score-metric" value="delta_z"> Δ z-score (within-dataset)</label>
-        </div>
-        <div id="chart-cd-real" style="width:100%;min-height:440px"></div>
-      </div>
-
-      <!-- MODULE EDITOR (interactive exploration) -->
+      <!-- GENE MODULE EDITOR (drives every chart on this tab) -->
       <div class="module-editor">
-        <h3>Custom gene modules <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(edit to re-score live)</span></h3>
+        <h3>Gene modules <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(edit to re-score live)</span></h3>
         <div class="module-sub">
-          Each score is the mean (stroke − control) log-norm expression of the listed genes per dataset and cell type.
-          Click × to remove a gene, type a new gene symbol and press Enter to add, or use Reset to restore the default panel.
-          Panels persist between visits via localStorage. Missing genes (not in the 251-gene meta-analysis set) are flagged in red and excluded.
+          Each Δ-score is the mean (stroke − control) log-norm expression of the listed genes per
+          (dataset × timepoint × cell type). Click × to remove a gene, type a new gene symbol and
+          press Enter to add, or use Reset to restore the default panel. Panels persist between
+          visits via localStorage. Missing genes (not in the 251-gene meta-analysis set) are
+          flagged in red and excluded.
         </div>
         <div id="module-editor-rows"></div>
         <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
@@ -519,15 +541,23 @@
         </div>
       </div>
 
-      <!-- CUSTOM MODULE HEATMAP -->
+      <!-- MAIN HEATMAP with view toggle -->
       <div class="chart-panel">
-        <div class="chart-title">Custom module Δ-score heatmap</div>
-        <div class="chart-subtitle">
-          Live-recomputed from the editable panels above. All five pathways (including ferroptosis, necrosis and parthanatos)
-          can be explored here; the precomputed panel above only covers the three canonical pathways present in the
-          upstream analysis.
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <div class="chart-title">Δ-score heatmap (stroke − control)</div>
+            <div class="chart-subtitle" id="cd-heatmap-sub">Rows = cell types; columns = dataset·timepoint in chronological order. Red = up in stroke, blue = down.</div>
+          </div>
+          <div style="display:flex;gap:12px;font-size:0.82rem">
+            <label><input type="radio" name="cd-view" value="cross" checked> All datasets × time</label>
+            <label><input type="radio" name="cd-view" value="single"> One dataset over time</label>
+          </div>
         </div>
-        <div id="chart-cd-heatmap" style="width:100%;min-height:520px"></div>
+        <div id="cd-ds-pick-wrap" style="display:none;margin:8px 0">
+          Dataset:
+          <select id="cd-single-ds" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.85rem"></select>
+        </div>
+        <div id="chart-cd-heatmap" style="width:100%;min-height:560px"></div>
         <div class="chart-note" id="cd-note"></div>
       </div>
     </div>
@@ -742,6 +772,64 @@ const PATHWAY_COLORS = {
   Antioxidant: '#16A085',
 };
 
+/* Custom diverging colormap: low = blue, mid = white, high = red.
+   Used explicitly to avoid Plotly's confusing RdBu orientation. */
+const CMAP_DIVERGING = [
+  [0.00, '#2C7FB8'],  // deep blue (low / down in stroke)
+  [0.25, '#7FB3D5'],
+  [0.50, '#FFFFFF'],  // white (zero)
+  [0.75, '#F1948A'],
+  [1.00, '#C0392B'],  // deep red (high / up in stroke)
+];
+
+/* ============================================================
+   CANONICAL DAYS-POST-STROKE mapping
+   For each (dataset, condition) → day number. Day 0 means control/sham.
+   This lets every tab render time-resolved and sort chronologically.
+   ------------------------------------------------------------ */
+const DAYS_OF = {
+  GSE174574: { Sham: 0, Stroke: 1 },
+  GSE197341: { Sham: 0, D3: 3, D7: 7, D14: 14, D28: 28 },
+  GSE227651: { Sham: 0, D1: 1, D3: 3, D7: 7 },
+  GSE244576: { Sham: 0, Stroke: 3 },
+  GSE250245: { Sham: 0, Stroke_ipsi: 2, Stroke_contra: 2 },
+  GSE276202: { Control: 0, Stroke_core: 30, Peri_infarct: 30 },
+  GSE279666: { Sham: 0, Control: 0, D3: 3, D14: 14 },
+  GSE300564: { Sham: 0, Stroke_isotype: 14, Stroke_antiVCAM1: 14, Stroke_antiVLA4: 14 },
+  GSE310324: { Sham: 0, Stroke: 3 },
+};
+
+/* Three-bin time scheme: Acute (≤3 d), Subacute (4-14 d), Chronic (>14 d) */
+function timeBinOf(days) {
+  if (days == null) return null;
+  if (days <= 3)  return 'Acute';
+  if (days <= 14) return 'Subacute';
+  return 'Chronic';
+}
+const TIME_BIN_COLOR = { Acute: '#0279EE', Subacute: '#9B59B6', Chronic: '#FF9400' };
+
+/* Controls (day=0) / stroke (day>0) condition labels for a dataset */
+function ctrlConds(ds) {
+  return Object.entries(DAYS_OF[ds] || {}).filter(([, d]) => d === 0).map(([c]) => c);
+}
+function strokeConds(ds) {
+  return Object.entries(DAYS_OF[ds] || {}).filter(([, d]) => d > 0).map(([c]) => c);
+}
+
+/* Build an ordered list of (dataset, stroke-condition) columns — chronological */
+function expandedStrokeCols() {
+  const cols = [];
+  for (const [ds, conds] of Object.entries(DAYS_OF)) {
+    for (const [c, d] of Object.entries(conds)) {
+      if (d === 0) continue;
+      cols.push({ dataset: ds, condition: c, days: d, bin: timeBinOf(d),
+                  label: `${ds}_${c}`, shortLabel: `${ds}·D${d}` });
+    }
+  }
+  cols.sort((a, b) => a.days - b.days || a.dataset.localeCompare(b.dataset));
+  return cols;
+}
+
 const SIG_COLORS = {
   A1_markers: C.red, A2_markers: '#2ECC71', Pan_reactive: '#F39C12',
   Antioxidant: C.teal,
@@ -889,6 +977,20 @@ function controlCondsFor(dataset) {
     }
   }
   return out;
+}
+
+/* Δ score for a SPECIFIC stroke condition (per-timepoint).
+   Compares `strokeCond` to the mean across all controls in that dataset. */
+function moduleDeltaPerCond(dataset, cellType, strokeCond, genes) {
+  const controls = ctrlConds(dataset);
+  if (!controls.length) return { delta: null, nGenes: 0 };
+  const sm = moduleMean(dataset, cellType, strokeCond, genes);
+  const ctrlMeans = controls
+    .map(c => moduleMean(dataset, cellType, c, genes))
+    .filter(m => m.mean !== null);
+  if (sm.mean === null || !ctrlMeans.length) return { delta: null, nGenes: sm.nGenes };
+  const ctrlMean = ctrlMeans.reduce((a, b) => a + b.mean, 0) / ctrlMeans.length;
+  return { delta: sm.mean - ctrlMean, stroke: sm.mean, ctrl: ctrlMean, nGenes: sm.nGenes };
 }
 
 /* Δ(stroke − control) module score for a given (dataset, cell_type, pathway) */
@@ -1078,74 +1180,13 @@ function renderModuleEditor() {
 }
 
 function renderCellDeath() {
-  renderCellDeathReal();
+  // Populate the single-dataset dropdown once
+  const dsSel = document.getElementById('cd-single-ds');
+  if (dsSel && !dsSel.options.length) {
+    dsSel.innerHTML = DATA.datasets.map(d => `<option value="${d.id}">${d.id}</option>`).join('');
+  }
   renderModuleEditor();
   renderCellDeathHeatmap();
-}
-
-/* Authoritative heatmap from core_gene_scores.json (precomputed pipeline)
-   Covers Apoptosis / Ferroptosis / Necroptosis — the three pathways present in
-   the upstream R pipeline. Rows = cell types, columns = datasets, faceted by
-   pathway in three panels. */
-function renderCellDeathReal() {
-  const metric = document.querySelector('input[name="cd-score-metric"]:checked')?.value || 'delta';
-  const pathways = ['Apoptosis', 'Ferroptosis', 'Necroptosis'];
-  const dsOrder = datasetOrder();
-  const cellTypes = CT_ORDER.filter(ct => DATA.coreScores.some(r => r.cell_type === ct));
-
-  const traces = [], annotations = [];
-  const nCols = pathways.length;
-
-  pathways.forEach((pw, pi) => {
-    const z = cellTypes.map(ct => dsOrder.map(ds => {
-      const r = DATA.coreScores.find(x => x.dataset === ds && x.cell_type === ct && x.pathway === pw);
-      return r ? r[metric] : null;
-    }));
-    const text = cellTypes.map(ct => dsOrder.map(ds => {
-      const r = DATA.coreScores.find(x => x.dataset === ds && x.cell_type === ct && x.pathway === pw);
-      if (!r) return '(no data)';
-      return `<b>${r.cell_type}</b> · ${r.pathway}<br>Dataset: ${r.dataset} (${r.time_bin}, D${r.days})<br>` +
-             `Δ expression: ${r.delta.toFixed(3)}<br>Δ z-score: ${r.delta_z.toFixed(2)}<br>` +
-             `Stroke mean: ${r.stroke.toFixed(3)} · Ctrl mean: ${r.ctrl.toFixed(3)}<br>` +
-             `n genes in panel: ${r.n_genes}`;
-    }));
-    const flat = z.flat().filter(v => v !== null && !isNaN(v));
-    const mx = flat.length ? Math.max(0.3, Math.max(...flat.map(Math.abs))) : 1;
-    const xref = nCols === 1 ? 'x' : `x${pi+1}`;
-    const yref = nCols === 1 ? 'y' : `y${pi+1}`;
-
-    traces.push({
-      type: 'heatmap', z, x: dsOrder, y: cellTypes, text,
-      hovertemplate: '%{text}<extra></extra>',
-      colorscale: 'RdBu', reversescale: true,
-      zmin: -mx, zmax: mx,
-      showscale: pi === nCols - 1,
-      colorbar: { title: metric === 'delta_z' ? 'Δ z' : 'Δ expr', thickness: 14, len: 0.8 },
-      xaxis: xref, yaxis: yref,
-    });
-
-    annotations.push({
-      text: `<b>${pw}</b>`, x: (pi + 0.5) / nCols, y: 1.05,
-      xref: 'paper', yref: 'paper', showarrow: false,
-      font: { size: 13, color: PATHWAY_COLORS[pw] }, xanchor: 'center',
-    });
-  });
-
-  const layout = {
-    annotations,
-    margin: { l: 115, r: 80, t: 60, b: 100 },
-    paper_bgcolor: 'white', plot_bgcolor: 'white',
-    height: Math.max(380, cellTypes.length * 32 + 140),
-  };
-  const gap = 0.04;
-  const w = (1 - gap * (nCols - 1)) / nCols;
-  for (let i = 0; i < nCols; i++) {
-    const xi = i === 0 ? 'xaxis' : `xaxis${i+1}`;
-    const yi = i === 0 ? 'yaxis' : `yaxis${i+1}`;
-    layout[xi] = { domain: [i*(w+gap), i*(w+gap)+w], tickangle: -45, tickfont: { size: 9 }, anchor: i===0 ? 'y' : `y${i+1}` };
-    layout[yi] = { autorange: 'reversed', tickfont: { size: 10 }, anchor: i===0 ? 'x' : `x${i+1}`, showticklabels: i===0 };
-  }
-  Plotly.react('chart-cd-real', traces, layout, { responsive: true, displayModeBar: false });
 }
 
 function datasetOrder() {
@@ -1159,40 +1200,65 @@ function datasetOrder() {
 function renderCellDeathHeatmap() {
   const sel = document.getElementById('cd-pathway').value;
   const ctFocus = document.getElementById('cd-celltype').value;
+  const viewRadio = document.querySelector('input[name="cd-view"]:checked');
+  const view = viewRadio ? viewRadio.value : 'cross';
+  const singleDs = document.getElementById('cd-single-ds')?.value;
+
+  // Show/hide the dataset picker depending on view
+  const dsWrap = document.getElementById('cd-ds-pick-wrap');
+  if (dsWrap) dsWrap.style.display = (view === 'single') ? 'block' : 'none';
+
   const pathways = sel === 'All' ? Object.keys(DEFAULT_MODULES) : [sel];
-  const dsOrder = datasetOrder();
   const cellTypes = ctFocus === 'all'
     ? CT_ORDER.filter(ct => DATA.datasets.some(d => d.cell_types.includes(ct)))
     : [ctFocus];
 
+  // ------------------------------------------------------------------
+  // Build columns based on view
+  //   cross  = every (dataset × stroke-timepoint) chronological
+  //   single = a chosen dataset's stroke conditions, sorted by day
+  // ------------------------------------------------------------------
+  let cols;  // array of { dataset, condition, days, bin, label, shortLabel }
+  if (view === 'single' && singleDs) {
+    const conds = strokeConds(singleDs);
+    cols = conds.map(c => {
+      const d = DAYS_OF[singleDs][c];
+      return { dataset: singleDs, condition: c, days: d, bin: timeBinOf(d),
+               label: `D${d} · ${c}`, shortLabel: `D${d}` };
+    }).sort((a, b) => a.days - b.days);
+  } else {
+    cols = expandedStrokeCols();
+  }
+
+  const xLabels = cols.map(c => c.shortLabel);
   const nCols = pathways.length;
   const traces = [], annotations = [];
 
   pathways.forEach((pw, pi) => {
-    const z = cellTypes.map(ct => dsOrder.map(ds => {
-      const r = moduleDelta(ds, ct, MODULES[pw]);
+    const z = cellTypes.map(ct => cols.map(col => {
+      const r = moduleDeltaPerCond(col.dataset, ct, col.condition, MODULES[pw]);
       return r.delta;
     }));
-    const text = cellTypes.map(ct => dsOrder.map(ds => {
-      const r = moduleDelta(ds, ct, MODULES[pw]);
+    const text = cellTypes.map(ct => cols.map(col => {
+      const r = moduleDeltaPerCond(col.dataset, ct, col.condition, MODULES[pw]);
       if (r.delta === null) return '(no data)';
-      return `Dataset: ${ds}<br>Cell type: ${ct}<br>Pathway: ${pw}<br>Δ (stroke − control): ${r.delta.toFixed(3)}<br>Genes used: ${r.nGenes}/${MODULES[pw].length}`;
+      return `Dataset: ${col.dataset}<br>Condition: ${col.condition}<br>Day: ${col.days} (${col.bin})<br>Cell type: ${ct}<br>Pathway: ${pw}<br>Δ (stroke − control): ${r.delta.toFixed(3)}<br>Genes used: ${r.nGenes}/${MODULES[pw].length}`;
     }));
     const xref = nCols === 1 ? 'x' : `x${pi+1}`;
     const yref = nCols === 1 ? 'y' : `y${pi+1}`;
 
     // Symmetric colour-scale bounds using the data
     const flat = z.flat().filter(v => v !== null && !isNaN(v));
-    const mx = flat.length ? Math.max(0.3, Math.max(...flat.map(Math.abs))) : 1;
+    const mx = flat.length ? Math.max(0.3, Math.max(...flat.map(v => Math.abs(v)))) : 1;
 
     traces.push({
       type: 'heatmap',
-      z, x: dsOrder, y: cellTypes, text,
+      z, x: xLabels, y: cellTypes, text,
       hovertemplate: '%{text}<extra></extra>',
-      colorscale: 'RdBu', reversescale: true,
+      colorscale: CMAP_DIVERGING,
       zmin: -mx, zmax: mx,
       showscale: pi === nCols - 1,
-      colorbar: { title: 'Δ expr', thickness: 14, len: 0.8 },
+      colorbar: { title: 'Δ expr<br>(stroke − ctrl)', thickness: 14, len: 0.8 },
       xaxis: xref, yaxis: yref,
     });
 
@@ -1206,14 +1272,38 @@ function renderCellDeathHeatmap() {
     });
   });
 
+  // Time-bin coloured header stripes above the x-axis (cross view only)
+  if (view === 'cross' && nCols === 1) {
+    const shapes = [];
+    cols.forEach((col, i) => {
+      shapes.push({
+        type: 'rect', xref: 'x', yref: 'paper',
+        x0: i - 0.5, x1: i + 0.5, y0: 1.00, y1: 1.03,
+        line: { width: 0 },
+        fillcolor: TIME_BIN_COLOR[col.bin],
+        opacity: 0.7,
+      });
+    });
+    annotations.push(
+      { x: 1.02, y: 1.02, xref: 'paper', yref: 'paper', xanchor: 'left',
+        text: `<span style="color:${TIME_BIN_COLOR.Acute}">■ Acute</span> · <span style="color:${TIME_BIN_COLOR.Subacute}">■ Subacute</span> · <span style="color:${TIME_BIN_COLOR.Chronic}">■ Chronic</span>`,
+        showarrow: false, font: { size: 9 },
+      }
+    );
+    // Attach shapes to layout after building it
+    var _shapes = shapes;
+  }
+
   const layout = {
     annotations,
-    margin: { l: 115, r: 80, t: 70, b: 100 },
+    margin: { l: 115, r: 110, t: 90, b: 130 },
     paper_bgcolor: 'white', plot_bgcolor: 'white',
-    height: Math.max(420, cellTypes.length * 34 + 180),
+    height: Math.max(420, cellTypes.length * 34 + 220),
   };
+  if (typeof _shapes !== 'undefined') layout.shapes = _shapes;
+
   if (nCols === 1) {
-    layout.xaxis = { tickangle: -45, tickfont: { size: 10 } };
+    layout.xaxis = { tickangle: -60, tickfont: { size: 9 }, automargin: true };
     layout.yaxis = { autorange: 'reversed', tickfont: { size: 10 } };
   } else {
     const gap = 0.04;
@@ -1221,7 +1311,7 @@ function renderCellDeathHeatmap() {
     for (let i = 0; i < nCols; i++) {
       const xi = i === 0 ? 'xaxis' : `xaxis${i+1}`;
       const yi = i === 0 ? 'yaxis' : `yaxis${i+1}`;
-      layout[xi] = { domain: [i*(w+gap), i*(w+gap)+w], tickangle: -45, tickfont: { size: 9 }, anchor: i===0 ? 'y' : `y${i+1}` };
+      layout[xi] = { domain: [i*(w+gap), i*(w+gap)+w], tickangle: -60, tickfont: { size: 8 }, anchor: i===0 ? 'y' : `y${i+1}`, automargin: true };
       layout[yi] = { autorange: 'reversed', tickfont: { size: 10 }, anchor: i===0 ? 'x' : `x${i+1}`, showticklabels: i===0 };
     }
   }
@@ -1234,6 +1324,11 @@ function renderCellDeathHeatmap() {
   }).filter(x => x.bad.length);
   const note = document.getElementById('cd-note');
   let noteHtml = '';
+  if (view === 'cross') {
+    noteHtml += `<span style="color:${C.muted}">Columns are <em>dataset · day-post-stroke</em>, sorted chronologically across all 9 datasets. Stripes above columns indicate time bin (Acute ≤ 3 d, Subacute 4-14 d, Chronic &gt; 14 d). Δ = stroke − pooled sham/control of the same dataset.</span><br>`;
+  } else if (view === 'single') {
+    noteHtml += `<span style="color:${C.muted}">Longitudinal view of <strong>${singleDs}</strong>: each column = one post-stroke timepoint vs. that dataset's sham. Use the dataset dropdown above to change.</span><br>`;
+  }
   if (misses.length) {
     noteHtml += `<strong>Missing genes:</strong> ` + misses.map(x => `<em>${x.pw}</em> — ${x.bad.join(', ')}`).join(' · ') + '.<br>';
   }
@@ -1245,60 +1340,102 @@ function renderCellDeathHeatmap() {
 
 /* ============================================================
    TAB 3 · TEMPORAL
-   Module-based time courses for GSE197341 / GSE279666.
+   User-chosen datasets & cell type for a given pathway module.
+   Any dataset with at least one non-zero day can be plotted —
+   datasets with multiple timepoints show a curve, single-point
+   datasets show a marker at their day.
    ------------------------------------------------------------ */
-const TEMPORAL_DS = [
-  { id: 'GSE197341', days: [0,3,7,14,28], labels: ['Sham','D3','D7','D14','D28'], condMap: {0:'Sham',3:'D3',7:'D7',14:'D14',28:'D28'}, style: 'solid' },
-  { id: 'GSE279666', days: [0,3,14],       labels: ['Sham','D3','D14'],           condMap: {0:'Sham',3:'D3',14:'D14'},                      style: 'dash' },
-];
+const TM_DASHES = ['solid', 'dash', 'dot', 'dashdot', 'longdash', 'longdashdot'];
+let TM_DS_INITED = false;
+
+function initTemporalDatasets() {
+  if (TM_DS_INITED) return;
+  const host = document.getElementById('tm-datasets');
+  if (!host) return;
+  const ids = Object.keys(DAYS_OF);
+  host.innerHTML = ids.map(id => {
+    // Default-check datasets with ≥ 2 non-zero timepoints (true time-courses)
+    const nDays = new Set(Object.values(DAYS_OF[id]).filter(d => d > 0)).size;
+    const checked = nDays >= 2 ? 'checked' : '';
+    return `<label class="check-item"><input type="checkbox" class="tm-ds" value="${id}" ${checked}> ${id} <span style="color:var(--muted);font-size:0.72rem">(${nDays} stroke tp)</span></label>`;
+  }).join('');
+  host.querySelectorAll('.tm-ds').forEach(cb => cb.addEventListener('change', renderTemporal));
+  TM_DS_INITED = true;
+}
 
 function renderTemporal() {
+  initTemporalDatasets();
   const ct = document.getElementById('tm-celltype').value;
   const pw = document.getElementById('tm-pathway').value;
   const norm = document.querySelector('input[name="tm-norm"]:checked').value;
+  const chosen = [...document.querySelectorAll('.tm-ds:checked')].map(cb => cb.value);
 
   document.getElementById('tm-title').textContent = `${ct} · ${pw} module`;
   document.getElementById('tm-subtitle').innerHTML =
-    `Mean expression of <span style="color:${PATHWAY_COLORS[pw]}">${pw}</span> module genes (${MODULES[pw].length} in panel) across days post-stroke.`;
+    `Mean expression of <span style="color:${PATHWAY_COLORS[pw]}">${pw}</span> module genes (${MODULES[pw].length} in panel) across days post-stroke. Datasets selected: ${chosen.length || 0}/9.`;
 
-  const col = PATHWAY_COLORS[pw];
+  const baseCol = PATHWAY_COLORS[pw];
   const traces = [];
-  for (const ds of TEMPORAL_DS) {
-    const pts = ds.days.map(d => {
-      const cond = ds.condMap[d];
-      const m = moduleMean(ds.id, ct, cond, MODULES[pw]);
-      return { day: d, cond, mean: m.mean, nGenes: m.nGenes };
-    }).filter(p => p.mean !== null);
-    if (!pts.length) continue;
+  const allDays = new Set([0]);
 
-    // Optional: normalise to Sham (day 0)
-    const sham = pts.find(p => p.day === 0);
-    const ys = pts.map(p => {
-      if (norm === 'foldSham' && sham && sham.mean > 0) return p.mean / sham.mean;
-      return p.mean;
-    });
+  chosen.forEach((dsId, dsIdx) => {
+    // Sham / control mean for this dataset — used by foldSham and delta
+    const ctrls = ctrlConds(dsId);
+    const ctrlMeans = ctrls.map(c => moduleMean(dsId, ct, c, MODULES[pw])).filter(m => m.mean !== null);
+    const ctrlMean = ctrlMeans.length ? ctrlMeans.reduce((a, b) => a + b.mean, 0) / ctrlMeans.length : null;
+
+    // Collect stroke-condition points
+    const strokes = strokeConds(dsId);
+    const strokePts = strokes.map(c => {
+      const m = moduleMean(dsId, ct, c, MODULES[pw]);
+      return { day: DAYS_OF[dsId][c], cond: c, mean: m.mean, nGenes: m.nGenes };
+    }).filter(p => p.mean !== null).sort((a, b) => a.day - b.day);
+
+    // Build the displayed points depending on normalisation
+    let pts = [];
+    if (norm === 'absolute') {
+      if (ctrlMean !== null) pts.push({ day: 0, y: ctrlMean, label: 'Sham' });
+      strokePts.forEach(p => pts.push({ day: p.day, y: p.mean, label: p.cond }));
+    } else if (norm === 'foldSham') {
+      if (ctrlMean && ctrlMean > 0) {
+        pts.push({ day: 0, y: 1, label: 'Sham' });
+        strokePts.forEach(p => pts.push({ day: p.day, y: p.mean / ctrlMean, label: p.cond }));
+      }
+    } else if (norm === 'delta') {
+      if (ctrlMean !== null) {
+        pts.push({ day: 0, y: 0, label: 'Sham' });
+        strokePts.forEach(p => pts.push({ day: p.day, y: p.mean - ctrlMean, label: p.cond }));
+      }
+    }
+    if (!pts.length) return;
+    pts.forEach(p => allDays.add(p.day));
 
     traces.push({
       type: 'scatter', mode: 'lines+markers',
-      name: ds.id,
+      name: dsId,
       x: pts.map(p => p.day),
-      y: ys,
-      line:   { color: col, width: 2.5, dash: ds.style },
-      marker: { color: col, size: 8, symbol: ds.style === 'dash' ? 'square' : 'circle' },
-      hovertemplate: `<b>${ds.id}</b><br>${ct} · ${pw}<br>Day %{x}<br>${norm==='foldSham' ? 'Fold/Sham' : 'Mean expr'}: %{y:.3f}<extra></extra>`,
+      y: pts.map(p => p.y),
+      text: pts.map(p => p.label),
+      line:   { color: baseCol, width: 2.2, dash: TM_DASHES[dsIdx % TM_DASHES.length] },
+      marker: { color: baseCol, size: 8 },
+      hovertemplate: `<b>${dsId}</b><br>${ct} · ${pw}<br>Day %{x} (%{text})<br>${norm==='foldSham' ? 'Fold/Sham' : norm==='delta' ? 'Δ vs sham' : 'Mean expr'}: %{y:.3f}<extra></extra>`,
     });
-  }
+  });
+
+  const sortedDays = [...allDays].sort((a, b) => a - b);
+  const tickvals = sortedDays;
+  const ticktext = sortedDays.map(d => d === 0 ? 'Sham' : `D${d}`);
 
   const layout = {
-    xaxis: { title: 'Days post-stroke', tickvals: [0,3,7,14,28], ticktext: ['Sham','D3','D7','D14','D28'], gridcolor: '#eee' },
-    yaxis: { title: norm === 'foldSham' ? 'Fold vs Sham' : 'Mean expression (log-norm)', gridcolor: '#eee' },
+    xaxis: { title: 'Days post-stroke', tickvals, ticktext, gridcolor: '#eee' },
+    yaxis: { title: norm === 'foldSham' ? 'Fold vs Sham' : (norm === 'delta' ? 'Δ (stroke − sham)' : 'Mean expression (log-norm)'), gridcolor: '#eee', zeroline: norm !== 'absolute', zerolinecolor: '#333' },
     shapes: norm === 'foldSham'
-      ? [{ type:'line', x0:0, x1:28, y0:1, y1:1, xref:'x', yref:'y', line:{color:'#999',width:1,dash:'dot'} }]
-      : [{ type:'line', x0:0, x1:0, y0:0, y1:1, xref:'x', yref:'paper', line:{color:'#999',width:1,dash:'dot'} }],
-    legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.85)', bordercolor: '#ddd', borderwidth: 1 },
-    margin: { l: 60, r: 30, t: 20, b: 60 },
+      ? [{ type:'line', x0:0, x1:Math.max(...sortedDays, 1), y0:1, y1:1, xref:'x', yref:'y', line:{color:'#999',width:1,dash:'dot'} }]
+      : [],
+    legend: { orientation: 'h', y: -0.22, font: { size: 10 } },
+    margin: { l: 70, r: 30, t: 20, b: 90 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 440,
+    height: 460,
   };
   Plotly.react('chart-temporal', traces, layout, { responsive: true, displayModeBar: false });
 }
@@ -1307,6 +1444,30 @@ function renderTemporal() {
    TAB 4 · FOREST / META-ANALYSIS
    Uses the precomputed forest.json for weighted means and CIs.
    ------------------------------------------------------------ */
+/* ------------------------------------------------------------
+   On-the-fly meta-analysis for the Forest tab.
+   Iterates every (dataset × stroke-condition × cell type × pathway)
+   using the *editable* MODULES, bins by timeBinOf(days), and
+   computes a weighted mean Δ per (pathway × time_bin × cell_type).
+   Weights come from datasets.json (`weight` field).
+   CI uses the normal-approx formula: ± 1.96 * sd / sqrt(n).
+   ------------------------------------------------------------ */
+function metaCellType(items) {
+  // items: [{ delta, weight }]
+  if (!items.length) return null;
+  const wSum = items.reduce((a, b) => a + b.weight, 0);
+  if (wSum === 0) return null;
+  const mean = items.reduce((a, b) => a + b.delta * b.weight, 0) / wSum;
+  let lo = mean, hi = mean;
+  if (items.length >= 2) {
+    const v = items.reduce((a, b) => a + b.weight * (b.delta - mean) ** 2, 0) / wSum;
+    const se = Math.sqrt(v / items.length);
+    lo = mean - 1.96 * se;
+    hi = mean + 1.96 * se;
+  }
+  return { mean, lo, hi, n: items.length };
+}
+
 function renderForest() {
   const showV = document.getElementById('fp-vascular').checked;
   const showG = document.getElementById('fp-glial').checked;
@@ -1315,185 +1476,294 @@ function renderForest() {
   const visible = { vascular: showV, glial: showG, neuronal: showN, immune: showI };
 
   const pathways = ['Apoptosis','Ferroptosis','Necroptosis'];
+  const timeBins = ['Acute','Subacute','Chronic'];
+
+  // Build the full (dataset × stroke-condition) list, then compute Δ per
+  // (pathway × time_bin × cell_type × dataset·condition) using current
+  // MODULES. This makes the forest plot respond to module edits too.
+  const cols = expandedStrokeCols();  // already chronological
+  const datasetWeight = {};
+  DATA.datasets.forEach(d => { datasetWeight[d.id] = d.weight || 0.1; });
+
+  // Gather all cell types present in any dataset
+  const cellOrder = CT_ORDER.filter(ct =>
+    DATA.datasets.some(d => d.cell_types.includes(ct)) && visible[ctGroup(ct)]
+  );
+
+  // For each (pathway × time_bin × cell_type), compute the weighted-mean Δ
+  // across every matching (dataset, stroke condition). Cache the structure
+  // to compute absMax in a second pass.
+  function computeMeta(pw, tb, ct) {
+    const items = [];
+    cols.forEach(col => {
+      if (timeBinOf(col.days) !== tb) return;
+      const r = moduleDeltaPerCond(col.dataset, ct, col.condition, MODULES[pw]);
+      if (r.delta !== null && !isNaN(r.delta)) {
+        items.push({ delta: r.delta, weight: datasetWeight[col.dataset] || 0.1, dataset: col.dataset, cond: col.condition, days: col.days });
+      }
+    });
+    return metaCellType(items);
+  }
+
+  // Determine a shared x-axis extent for comparability
+  let absMax = 0;
+  pathways.forEach(pw => timeBins.forEach(tb => cellOrder.forEach(ct => {
+    const m = computeMeta(pw, tb, ct);
+    if (m) absMax = Math.max(absMax, Math.abs(m.lo), Math.abs(m.hi));
+  })));
+  absMax = Math.max(0.3, absMax * 1.05);
+
   const traces = [], annotations = [];
-  const gap = 0.06;
-  const w = (1 - gap * 2) / 3;
+  const gap = 0.035;
+  const ncols = pathways.length;   // 3
+  const nrows = timeBins.length;   // 3
+  const wCell = (1 - gap * (ncols - 1)) / ncols;
+  const hCell = (1 - gap * (nrows - 1)) / nrows;
 
-  pathways.forEach((pw, pi) => {
-    const rows = DATA.forest
-      .filter(r => r.pathway === pw)
-      .filter(r => visible[ctGroup(r.cell_type)])
-      .sort((a, b) => a.weighted_mean_z - b.weighted_mean_z);
-    const xref = pi === 0 ? 'x' : `x${pi+1}`;
-    const yref = pi === 0 ? 'y' : `y${pi+1}`;
+  timeBins.forEach((tb, ri) => {
+    pathways.forEach((pw, ci) => {
+      const panelIdx = ri * ncols + ci;        // 0..8
+      const axNum = panelIdx + 1;
+      const xref = axNum === 1 ? 'x' : `x${axNum}`;
+      const yref = axNum === 1 ? 'y' : `y${axNum}`;
 
-    const normal = rows.filter(r => r.n_datasets > 1);
-    const sparse = rows.filter(r => r.n_datasets === 1);
+      // One meta-row per cell type
+      const perCT = cellOrder.map(ct => ({ cell_type: ct, meta: computeMeta(pw, tb, ct) }));
 
-    if (normal.length) traces.push({
-      type: 'scatter', mode: 'markers',
-      x: normal.map(r => r.weighted_mean_z), y: normal.map(r => r.cell_type),
-      error_x: {
-        type: 'data', symmetric: false,
-        array:      normal.map(r => (r.ci95_hi ?? r.weighted_mean_z) - r.weighted_mean_z),
-        arrayminus: normal.map(r => r.weighted_mean_z - (r.ci95_lo ?? r.weighted_mean_z)),
-        color: normal.map(r => ctColor(r.cell_type)), thickness: 2, width: 6,
-      },
-      marker: {
-        color: normal.map(r => ctColor(r.cell_type)),
-        size:  normal.map(r => CT_HIGHLIGHT.has(r.cell_type) ? 12 : 8),
-        line:  { color: normal.map(r => ctColor(r.cell_type)), width: 2 },
-      },
-      customdata: normal.map(r => [r.cell_type, pw, r.weighted_mean_z, r.ci95_lo, r.ci95_hi, r.n_datasets]),
-      hovertemplate: '<b>%{customdata[0]}</b><br>Pathway: %{customdata[1]}<br>Weighted z: %{customdata[2]:.3f}<br>95%% CI: [%{customdata[3]:.3f}, %{customdata[4]:.3f}]<br>n datasets: %{customdata[5]}<extra></extra>',
-      showlegend: false, xaxis: xref, yaxis: yref,
-    });
+      const hasData = perCT.filter(p => p.meta);
+      const noData  = perCT.filter(p => !p.meta);
 
-    if (sparse.length) traces.push({
-      type: 'scatter', mode: 'markers+text',
-      x: sparse.map(r => r.weighted_mean_z), y: sparse.map(r => r.cell_type),
-      text: sparse.map(() => '  (n=1)'),
-      textposition: 'middle right', textfont: { size: 9, color: '#888' },
-      marker: { color: 'white', size: 8, line: { color: sparse.map(r => ctColor(r.cell_type)), width: 2 }, symbol: 'circle-open' },
-      customdata: sparse.map(r => [r.cell_type, pw, r.weighted_mean_z, r.n_datasets]),
-      hovertemplate: '<b>%{customdata[0]}</b><br>Pathway: %{customdata[1]}<br>Weighted z: %{customdata[2]:.3f}<br>n datasets: %{customdata[3]}<extra></extra>',
-      showlegend: false, xaxis: xref, yaxis: yref,
-    });
+      // Filled points with CI whiskers (≥ 2 datasets)
+      const solid = hasData.filter(p => p.meta.n >= 2);
+      const sparse = hasData.filter(p => p.meta.n === 1);
 
-    const xDom = [pi*(w+gap), pi*(w+gap)+w];
-    annotations.push({
-      text: `<b>${pw}</b>`, x: (xDom[0]+xDom[1])/2, y: 1.04,
-      xref: 'paper', yref: 'paper', showarrow: false,
-      font: { size: 13, color: PATHWAY_COLORS[pw] }, xanchor: 'center',
+      if (solid.length) traces.push({
+        type: 'scatter', mode: 'markers',
+        x: solid.map(p => p.meta.mean),
+        y: solid.map(p => p.cell_type),
+        error_x: {
+          type: 'data', symmetric: false,
+          array:      solid.map(p => p.meta.hi - p.meta.mean),
+          arrayminus: solid.map(p => p.meta.mean - p.meta.lo),
+          color: solid.map(p => ctColor(p.cell_type)), thickness: 2, width: 5,
+        },
+        marker: {
+          color: solid.map(p => ctColor(p.cell_type)),
+          size: solid.map(p => CT_HIGHLIGHT.has(p.cell_type) ? 10 : 7),
+          line: { color: solid.map(p => ctColor(p.cell_type)), width: 2 },
+        },
+        customdata: solid.map(p => [p.cell_type, pw, tb, p.meta.mean, p.meta.lo, p.meta.hi, p.meta.n]),
+        hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} · %{customdata[2]}<br>Weighted Δ: %{customdata[3]:.3f}<br>95%% CI: [%{customdata[4]:.3f}, %{customdata[5]:.3f}]<br>n dataset·tp: %{customdata[6]}<extra></extra>',
+        showlegend: false, xaxis: xref, yaxis: yref,
+      });
+
+      if (sparse.length) traces.push({
+        type: 'scatter', mode: 'markers',
+        x: sparse.map(p => p.meta.mean),
+        y: sparse.map(p => p.cell_type),
+        marker: {
+          color: 'white', size: 7,
+          line: { color: sparse.map(p => ctColor(p.cell_type)), width: 2 },
+          symbol: 'circle-open',
+        },
+        customdata: sparse.map(p => [p.cell_type, pw, tb, p.meta.mean, p.meta.n]),
+        hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} · %{customdata[2]}<br>Weighted Δ: %{customdata[3]:.3f}<br>n dataset·tp: %{customdata[4]} (single study)<extra></extra>',
+        showlegend: false, xaxis: xref, yaxis: yref,
+      });
+
+      // Domains
+      const xDom = [ci * (wCell + gap), ci * (wCell + gap) + wCell];
+      const yDomTop = 1 - (ri * (hCell + gap));
+      const yDom = [yDomTop - hCell, yDomTop];
+
+      // Column labels (pathways, top)
+      if (ri === 0) {
+        annotations.push({
+          text: `<b>${pw}</b>`, x: (xDom[0] + xDom[1]) / 2, y: 1.02,
+          xref: 'paper', yref: 'paper', showarrow: false,
+          font: { size: 13, color: PATHWAY_COLORS[pw] }, xanchor: 'center',
+        });
+      }
+      // Row labels (time bins, left of leftmost panel)
+      if (ci === 0) {
+        annotations.push({
+          text: `<b style="color:${TIME_BIN_COLOR[tb]}">${tb}</b>`,
+          x: -0.06, y: (yDom[0] + yDom[1]) / 2,
+          xref: 'paper', yref: 'paper', showarrow: false,
+          font: { size: 11, color: TIME_BIN_COLOR[tb] },
+          xanchor: 'center', textangle: -90,
+        });
+      }
     });
   });
 
   const layout = {
     annotations,
-    margin: { l: 115, r: 30, t: 60, b: 50 },
+    margin: { l: 150, r: 20, t: 60, b: 50 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: Math.max(420, 60 + 34 * Math.ceil(DATA.forest.filter(r => visible[ctGroup(r.cell_type)]).length / 3)),
+    height: Math.max(700, 110 * nrows + 120),
   };
-  for (let i = 0; i < 3; i++) {
-    const xi = i === 0 ? 'xaxis' : `xaxis${i+1}`;
-    const yi = i === 0 ? 'yaxis' : `yaxis${i+1}`;
-    const xDom = [i*(w+gap), i*(w+gap)+w];
-    layout[xi] = { domain: xDom, zeroline: true, zerolinecolor: '#333', zerolinewidth: 1.5, gridcolor: '#eee', tickfont: { size: 10 }, anchor: i===0 ? 'y' : `y${i+1}` };
-    layout[yi] = { tickfont: { size: 10 }, anchor: i===0 ? 'x' : `x${i+1}`, showticklabels: i===0 };
+  for (let ri = 0; ri < nrows; ri++) {
+    for (let ci = 0; ci < ncols; ci++) {
+      const panelIdx = ri * ncols + ci;
+      const axNum = panelIdx + 1;
+      const xi = axNum === 1 ? 'xaxis' : `xaxis${axNum}`;
+      const yi = axNum === 1 ? 'yaxis' : `yaxis${axNum}`;
+      const xDom = [ci * (wCell + gap), ci * (wCell + gap) + wCell];
+      const yDomTop = 1 - (ri * (hCell + gap));
+      const yDom = [yDomTop - hCell, yDomTop];
+      layout[xi] = {
+        domain: xDom, range: [-absMax, absMax],
+        zeroline: true, zerolinecolor: '#333', zerolinewidth: 1.2,
+        gridcolor: '#eee', tickfont: { size: 9 },
+        anchor: `y${axNum}`,
+        showticklabels: ri === nrows - 1,
+        title: ri === nrows - 1 ? { text: 'Weighted Δ (stroke − ctrl)', font: { size: 10 } } : undefined,
+      };
+      layout[yi] = {
+        domain: yDom, tickfont: { size: 9 },
+        anchor: `x${axNum}`,
+        showticklabels: ci === 0,
+        autorange: 'reversed',
+      };
+    }
   }
   Plotly.react('chart-forest', traces, layout, { responsive: true, displayModeBar: false });
 }
 
 /* ============================================================
    TAB 5 · ASTROCYTES
-   A1/A2/Pan-reactive from glial.json + custom Antioxidant
-   module computed on-the-fly.
+   Focus: Astrocyte cell type only, across ALL datasets × timepoints.
+   Bar chart: per-dataset·day Δ for each signature (A1/A2/Pan/Antioxidant).
+   Timeline: same data plotted on a day axis.
    ------------------------------------------------------------ */
+function astroSigDelta(dataset, cond, sig) {
+  // Prefer glial.json for the pre-computed signatures; fallback to
+  // Antioxidant computed on-the-fly via moduleDeltaPerCond.
+  if (sig === 'Antioxidant') {
+    const r = moduleDeltaPerCond(dataset, 'Astrocyte', cond, ANTIOX_GENES);
+    return r.delta;
+  }
+  // glial.json has rows per dataset × signature × cell_type (± timepoint)
+  const rows = DATA.glial.filter(r =>
+    r.dataset === dataset && r.signature === sig && r.cell_type === 'Astrocyte');
+  if (!rows.length) return null;
+  // Preferred: match by condition/timepoint name if present
+  const exact = rows.find(r => r.condition === cond || r.timepoint === cond);
+  if (exact && typeof exact.delta === 'number') return exact.delta;
+  // Otherwise: try to pick a time-appropriate row
+  const day = DAYS_OF[dataset]?.[cond];
+  if (day != null) {
+    // glial.json uses things like "D3", "D14" — best-effort match to the closest day label
+    const dayRow = rows.find(r => {
+      const lbl = (r.timepoint || r.condition || '').toString();
+      const m = lbl.match(/D?(\d+)/);
+      return m && Number(m[1]) === day;
+    });
+    if (dayRow && typeof dayRow.delta === 'number') return dayRow.delta;
+  }
+  // Last resort: mean across rows
+  return rows.reduce((a, b) => a + (b.delta || 0), 0) / rows.length;
+}
+
 function renderAstrocyte() {
-  // Populate dataset selector on first render
+  // Populate dataset selector on first render: "All" + any dataset that has Astrocyte cells
   const asDs = document.getElementById('as-dataset');
   if (!asDs.options.length) {
-    const datasets = [...new Set(DATA.glial.map(r => r.dataset))];
-    asDs.innerHTML = datasets.map(d => `<option value="${d}">${d}</option>`).join('');
+    const dsWithAstro = DATA.datasets.filter(d => d.cell_types.includes('Astrocyte')).map(d => d.id);
+    asDs.innerHTML = '<option value="__all__">All datasets</option>' +
+                     dsWithAstro.map(d => `<option value="${d}">${d}</option>`).join('');
   }
   renderAstrocyteBar();
   renderAstrocyteTimeline();
 }
 
 function renderAstrocyteBar() {
-  const dataset = document.getElementById('as-dataset').value;
+  const dsVal = document.getElementById('as-dataset').value;
   const activeSigs = [...document.querySelectorAll('.as-sig:checked')].map(cb => cb.value);
 
-  // Cell types available for this dataset
-  const dsMeta = DATA.datasets.find(d => d.id === dataset);
-  const cellTypes = dsMeta ? dsMeta.cell_types : [];
+  // Columns = every (dataset × stroke timepoint) for datasets with Astrocyte cells
+  const allCols = expandedStrokeCols()
+    .filter(col => DATA.datasets.find(d => d.id === col.dataset)?.cell_types.includes('Astrocyte'));
+  const cols = (dsVal === '__all__') ? allCols : allCols.filter(c => c.dataset === dsVal);
 
+  const xLabels = cols.map(c => c.shortLabel);
   const traces = activeSigs.map(sig => {
-    const ys = cellTypes.map(ct => {
-      if (sig === 'Antioxidant') {
-        const d = moduleDelta(dataset, ct, ANTIOX_GENES);
-        return d.delta;
-      }
-      // Use glial.json
-      const rows = DATA.glial.filter(r => r.dataset === dataset && r.signature === sig && r.cell_type === ct);
-      if (!rows.length) return null;
-      // Average across any timepoints present (chronic studies have one, multi have many)
-      const mean = rows.reduce((a,b)=>a+b.delta,0) / rows.length;
-      return mean;
-    });
+    const ys = cols.map(col => astroSigDelta(col.dataset, col.condition, sig));
     return {
       type: 'bar', name: SIG_LABELS[sig] || sig,
-      x: cellTypes, y: ys,
+      x: xLabels, y: ys,
       marker: { color: SIG_COLORS[sig] },
       hovertemplate: `<b>${SIG_LABELS[sig]}</b><br>%{x}<br>Δ: %{y:.3f}<extra></extra>`,
     };
   });
 
+  // Colour stripe under x-axis indicating time-bin
+  const shapes = cols.map((col, i) => ({
+    type: 'rect', xref: 'x', yref: 'paper',
+    x0: i - 0.5, x1: i + 0.5, y0: -0.03, y1: 0,
+    line: { width: 0 }, fillcolor: TIME_BIN_COLOR[col.bin], opacity: 0.7,
+  }));
+
   const layout = {
     barmode: 'group',
-    xaxis: { title: 'Cell type', tickfont: { size: 11 } },
-    yaxis: { title: 'Δ (stroke − control)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
-    legend: { orientation: 'h', y: -0.22 },
-    margin: { l: 60, r: 20, t: 20, b: 90 },
+    shapes,
+    xaxis: { title: 'Dataset · day post-stroke', tickfont: { size: 9 }, tickangle: -60, automargin: true },
+    yaxis: { title: 'Δ (stroke − control) · Astrocyte', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.30 },
+    margin: { l: 70, r: 20, t: 20, b: 130 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 380,
+    height: 420,
+    annotations: [
+      { x: 1.0, y: 1.04, xref: 'paper', yref: 'paper', xanchor: 'right',
+        text: `<span style="color:${TIME_BIN_COLOR.Acute}">■ Acute</span> · <span style="color:${TIME_BIN_COLOR.Subacute}">■ Subacute</span> · <span style="color:${TIME_BIN_COLOR.Chronic}">■ Chronic</span>`,
+        showarrow: false, font: { size: 9 },
+      }
+    ],
   };
   Plotly.react('chart-astro-bar', traces, layout, { responsive: true, displayModeBar: false });
 }
 
 function renderAstrocyteTimeline() {
+  const dsVal = document.getElementById('as-dataset').value;
   const activeSigs = [...document.querySelectorAll('.as-sig:checked')].map(cb => cb.value);
-  const ctTarget = 'Astrocyte';
+
+  // All (dataset, day, delta) points across datasets with Astrocyte cells
+  const allCols = expandedStrokeCols()
+    .filter(col => DATA.datasets.find(d => d.id === col.dataset)?.cell_types.includes('Astrocyte'));
+  const cols = (dsVal === '__all__') ? allCols : allCols.filter(c => c.dataset === dsVal);
+
+  // Group by (dataset, signature) for each line
+  const datasets = [...new Set(cols.map(c => c.dataset))];
+  const DASHES = ['solid', 'dash', 'dot', 'dashdot', 'longdash', 'longdashdot'];
   const traces = [];
 
-  // GSE279666 — has D3 and D14 tied to signatures in glial.json
-  const d279 = DATA.glial.filter(r => r.dataset === 'GSE279666' && r.cell_type === ctTarget);
-  for (const sig of activeSigs) {
-    if (sig === 'Antioxidant') continue;
-    const pts = d279.filter(r => r.signature === sig).map(r => ({ day: r.timepoint === 'D14' ? 14 : 3, delta: r.delta }));
-    pts.sort((a,b)=>a.day-b.day);
-    // Prepend 0 at day 0 (Sham) for visual anchor
-    if (pts.length) pts.unshift({ day: 0, delta: 0 });
-    if (pts.length) traces.push({
-      type: 'scatter', mode: 'lines+markers', name: `${SIG_LABELS[sig]} · GSE279666`,
-      x: pts.map(p=>p.day), y: pts.map(p=>p.delta),
-      line: { color: SIG_COLORS[sig], width: 2.5, dash: 'dash' },
-      marker: { color: SIG_COLORS[sig], size: 8, symbol: 'square' },
-      hovertemplate: `<b>${SIG_LABELS[sig]}</b> · GSE279666<br>Day %{x}<br>Δ: %{y:.3f}<extra></extra>`,
-    });
-  }
-
-  // Antioxidant — compute on the fly across GSE197341 (richest time course) and GSE279666
-  if (activeSigs.includes('Antioxidant')) {
-    const multiDs = [
-      { id: 'GSE197341', days:[0,3,7,14,28], condMap:{0:'Sham',3:'D3',7:'D7',14:'D14',28:'D28'}, style:'solid' },
-      { id: 'GSE279666', days:[0,3,14],      condMap:{0:'Sham',3:'D3',14:'D14'},                   style:'dash'  },
-    ];
-    for (const ds of multiDs) {
-      const shamCond = ds.condMap[0];
-      const sham = moduleMean(ds.id, ctTarget, shamCond, ANTIOX_GENES);
-      const pts = ds.days.map(d => {
-        const m = moduleMean(ds.id, ctTarget, ds.condMap[d], ANTIOX_GENES);
-        if (m.mean === null) return null;
-        return { day: d, delta: m.mean - (sham.mean ?? 0) };
-      }).filter(Boolean);
-      if (pts.length) traces.push({
-        type: 'scatter', mode: 'lines+markers', name: `Antioxidant · ${ds.id}`,
-        x: pts.map(p=>p.day), y: pts.map(p=>p.delta),
-        line: { color: SIG_COLORS.Antioxidant, width: 2.5, dash: ds.style },
-        marker: { color: SIG_COLORS.Antioxidant, size: 8, symbol: ds.style==='dash'?'square':'circle' },
-        hovertemplate: `<b>Antioxidant</b> · ${ds.id}<br>Day %{x}<br>Δ vs Sham: %{y:.3f}<extra></extra>`,
+  datasets.forEach((ds, dsIdx) => {
+    const dsCols = cols.filter(c => c.dataset === ds).sort((a, b) => a.days - b.days);
+    activeSigs.forEach(sig => {
+      const pts = dsCols.map(col => ({ day: col.days, delta: astroSigDelta(col.dataset, col.condition, sig) }))
+                        .filter(p => p.delta != null && !isNaN(p.delta));
+      if (!pts.length) return;
+      // Anchor at day 0 (sham) for visual clarity
+      pts.unshift({ day: 0, delta: 0 });
+      traces.push({
+        type: 'scatter', mode: 'lines+markers',
+        name: `${SIG_LABELS[sig]} · ${ds}`,
+        x: pts.map(p => p.day), y: pts.map(p => p.delta),
+        line: { color: SIG_COLORS[sig], width: 2.5, dash: DASHES[dsIdx % DASHES.length] },
+        marker: { color: SIG_COLORS[sig], size: 8 },
+        hovertemplate: `<b>${SIG_LABELS[sig]}</b> · ${ds}<br>Day %{x}<br>Δ: %{y:.3f}<extra></extra>`,
       });
-    }
-  }
+    });
+  });
 
   const layout = {
-    xaxis: { title: 'Days post-stroke', tickvals:[0,3,7,14,28], ticktext:['Sham','D3','D7','D14','D28'], gridcolor: '#eee' },
-    yaxis: { title: 'Δ score (stroke − sham)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
-    legend: { orientation: 'h', y: -0.22 },
-    margin: { l: 60, r: 20, t: 20, b: 90 },
+    xaxis: { title: 'Days post-stroke', gridcolor: '#eee' },
+    yaxis: { title: 'Δ score (stroke − sham) · Astrocyte', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.30, font: { size: 9 } },
+    margin: { l: 70, r: 20, t: 20, b: 130 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 360,
+    height: 400,
   };
   Plotly.react('chart-astro-time', traces, layout, { responsive: true, displayModeBar: false });
 }
@@ -1502,146 +1772,241 @@ function renderAstrocyteTimeline() {
    TAB 6 · MICROGLIA
    M1/M2/DAM from glial.json (microglia tab only).
    ------------------------------------------------------------ */
+function microSigDelta(dataset, cond, sig) {
+  // Pre-computed M1/M2/DAM deltas live in glial.json for Microglia
+  const rows = DATA.glial.filter(r =>
+    r.dataset === dataset && r.signature === sig && r.cell_type === 'Microglia');
+  if (!rows.length) return null;
+  const exact = rows.find(r => r.condition === cond || r.timepoint === cond);
+  if (exact && typeof exact.delta === 'number') return exact.delta;
+  const day = DAYS_OF[dataset]?.[cond];
+  if (day != null) {
+    const dayRow = rows.find(r => {
+      const lbl = (r.timepoint || r.condition || '').toString();
+      const m = lbl.match(/D?(\d+)/);
+      return m && Number(m[1]) === day;
+    });
+    if (dayRow && typeof dayRow.delta === 'number') return dayRow.delta;
+  }
+  return rows.reduce((a, b) => a + (b.delta || 0), 0) / rows.length;
+}
+
 function renderMicroglia() {
   const mgDs = document.getElementById('mg-dataset');
   if (!mgDs.options.length) {
-    const datasets = [...new Set(DATA.glial.map(r => r.dataset))];
-    mgDs.innerHTML = datasets.map(d => `<option value="${d}">${d}</option>`).join('');
+    const dsWithMg = DATA.datasets.filter(d => d.cell_types.includes('Microglia')).map(d => d.id);
+    mgDs.innerHTML = '<option value="__all__">All datasets</option>' +
+                     dsWithMg.map(d => `<option value="${d}">${d}</option>`).join('');
   }
   renderMicrogliaBar();
   renderMicrogliaTimeline();
 }
 
 function renderMicrogliaBar() {
-  const dataset = document.getElementById('mg-dataset').value;
+  const dsVal = document.getElementById('mg-dataset').value;
   const activeSigs = [...document.querySelectorAll('.mg-sig:checked')].map(cb => cb.value);
-  const dsMeta = DATA.datasets.find(d => d.id === dataset);
-  const cellTypes = dsMeta ? dsMeta.cell_types : [];
 
+  const allCols = expandedStrokeCols()
+    .filter(col => DATA.datasets.find(d => d.id === col.dataset)?.cell_types.includes('Microglia'));
+  const cols = (dsVal === '__all__') ? allCols : allCols.filter(c => c.dataset === dsVal);
+
+  const xLabels = cols.map(c => c.shortLabel);
   const traces = activeSigs.map(sig => {
-    const ys = cellTypes.map(ct => {
-      const rows = DATA.glial.filter(r => r.dataset === dataset && r.signature === sig && r.cell_type === ct);
-      if (!rows.length) return null;
-      return rows.reduce((a,b)=>a+b.delta, 0) / rows.length;
-    });
+    const ys = cols.map(col => microSigDelta(col.dataset, col.condition, sig));
     return {
       type: 'bar', name: SIG_LABELS[sig] || sig,
-      x: cellTypes, y: ys,
+      x: xLabels, y: ys,
       marker: { color: SIG_COLORS[sig] },
       hovertemplate: `<b>${SIG_LABELS[sig]}</b><br>%{x}<br>Δ: %{y:.3f}<extra></extra>`,
     };
   });
+
+  const shapes = cols.map((col, i) => ({
+    type: 'rect', xref: 'x', yref: 'paper',
+    x0: i - 0.5, x1: i + 0.5, y0: -0.03, y1: 0,
+    line: { width: 0 }, fillcolor: TIME_BIN_COLOR[col.bin], opacity: 0.7,
+  }));
+
   const layout = {
     barmode: 'group',
-    xaxis: { title: 'Cell type', tickfont: { size: 11 } },
-    yaxis: { title: 'Δ (stroke − control)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
-    legend: { orientation: 'h', y: -0.22 },
-    margin: { l: 60, r: 20, t: 20, b: 90 },
+    shapes,
+    xaxis: { title: 'Dataset · day post-stroke', tickfont: { size: 9 }, tickangle: -60, automargin: true },
+    yaxis: { title: 'Δ (stroke − control) · Microglia', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.30 },
+    margin: { l: 70, r: 20, t: 20, b: 130 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 380,
+    height: 420,
+    annotations: [
+      { x: 1.0, y: 1.04, xref: 'paper', yref: 'paper', xanchor: 'right',
+        text: `<span style="color:${TIME_BIN_COLOR.Acute}">■ Acute</span> · <span style="color:${TIME_BIN_COLOR.Subacute}">■ Subacute</span> · <span style="color:${TIME_BIN_COLOR.Chronic}">■ Chronic</span>`,
+        showarrow: false, font: { size: 9 },
+      }
+    ],
   };
   Plotly.react('chart-mg-bar', traces, layout, { responsive: true, displayModeBar: false });
 }
 
 function renderMicrogliaTimeline() {
+  const dsVal = document.getElementById('mg-dataset').value;
   const activeSigs = [...document.querySelectorAll('.mg-sig:checked')].map(cb => cb.value);
+
+  const allCols = expandedStrokeCols()
+    .filter(col => DATA.datasets.find(d => d.id === col.dataset)?.cell_types.includes('Microglia'));
+  const cols = (dsVal === '__all__') ? allCols : allCols.filter(c => c.dataset === dsVal);
+
+  const datasets = [...new Set(cols.map(c => c.dataset))];
+  const DASHES = ['solid', 'dash', 'dot', 'dashdot', 'longdash', 'longdashdot'];
   const traces = [];
-  const d279 = DATA.glial.filter(r => r.dataset === 'GSE279666' && r.cell_type === 'Microglia');
-  for (const sig of activeSigs) {
-    const pts = d279.filter(r => r.signature === sig).map(r => ({ day: r.timepoint === 'D14' ? 14 : 3, delta: r.delta }));
-    pts.sort((a,b)=>a.day-b.day);
-    if (pts.length) pts.unshift({ day: 0, delta: 0 });
-    if (pts.length) traces.push({
-      type: 'scatter', mode: 'lines+markers', name: `${SIG_LABELS[sig]} · GSE279666`,
-      x: pts.map(p=>p.day), y: pts.map(p=>p.delta),
-      line: { color: SIG_COLORS[sig], width: 2.5, dash: 'dash' },
-      marker: { color: SIG_COLORS[sig], size: 8, symbol: 'square' },
-      hovertemplate: `<b>${SIG_LABELS[sig]}</b><br>Day %{x}<br>Δ: %{y:.3f}<extra></extra>`,
+
+  datasets.forEach((ds, dsIdx) => {
+    const dsCols = cols.filter(c => c.dataset === ds).sort((a, b) => a.days - b.days);
+    activeSigs.forEach(sig => {
+      const pts = dsCols.map(col => ({ day: col.days, delta: microSigDelta(col.dataset, col.condition, sig) }))
+                        .filter(p => p.delta != null && !isNaN(p.delta));
+      if (!pts.length) return;
+      pts.unshift({ day: 0, delta: 0 });
+      traces.push({
+        type: 'scatter', mode: 'lines+markers',
+        name: `${SIG_LABELS[sig]} · ${ds}`,
+        x: pts.map(p => p.day), y: pts.map(p => p.delta),
+        line: { color: SIG_COLORS[sig], width: 2.5, dash: DASHES[dsIdx % DASHES.length] },
+        marker: { color: SIG_COLORS[sig], size: 8 },
+        hovertemplate: `<b>${SIG_LABELS[sig]}</b> · ${ds}<br>Day %{x}<br>Δ: %{y:.3f}<extra></extra>`,
+      });
     });
-  }
+  });
+
   const layout = {
-    xaxis: { title: 'Days post-stroke', tickvals:[0,3,14], ticktext:['Sham','D3','D14'], gridcolor: '#eee' },
-    yaxis: { title: 'Δ score (stroke − sham)', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
-    legend: { orientation: 'h', y: -0.22 },
-    margin: { l: 60, r: 20, t: 20, b: 90 },
+    xaxis: { title: 'Days post-stroke', gridcolor: '#eee' },
+    yaxis: { title: 'Δ score (stroke − sham) · Microglia', zeroline: true, zerolinecolor: '#333', gridcolor: '#eee' },
+    legend: { orientation: 'h', y: -0.30, font: { size: 9 } },
+    margin: { l: 70, r: 20, t: 20, b: 130 },
     paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 360,
+    height: 400,
   };
   Plotly.react('chart-mg-time', traces, layout, { responsive: true, displayModeBar: false });
 }
 
 /* ============================================================
    TAB 7 · GENE EXPLORER
+   Heatmap: cell types (rows) × dataset·timepoint (chronological cols).
+   Values = Δ expr vs sham, or absolute mean expression.
    ------------------------------------------------------------ */
 function initGeneExplorer() {
   const genes = [...new Set(DATA.gene_expr.map(r => r.gene))].sort();
   const dl = document.getElementById('gene-datalist');
   dl.innerHTML = genes.map(g => `<option value="${g}">`).join('');
-  const datasets = [...new Set(DATA.gene_expr.map(r => r.dataset))].sort();
-  const sel = document.getElementById('ge-dataset');
-  sel.innerHTML = datasets.map(d => `<option value="${d}"${d==='GSE197341'?' selected':''}>${d}</option>`).join('');
-  document.getElementById('ge-gene-input').addEventListener('input', debounce(renderGene, 300));
-  sel.addEventListener('change', renderGene);
+  document.getElementById('ge-gene-input').addEventListener('input', debounce(renderGene, 250));
+  document.getElementById('ge-celltype').addEventListener('change', renderGene);
+  document.querySelectorAll('input[name="ge-mode"]').forEach(r =>
+    r.addEventListener('change', renderGene));
 }
 
-function conditionOrder(cond) {
-  const order = {
-    'Sham': 0, 'Control': 0,
-    'D1': 1, 'D3': 2, 'D7': 3, 'D14': 4, 'D28': 5,
-    'Stroke': 6, 'Stroke_ipsi': 7, 'Stroke_contra': 8,
-    'Stroke_core': 9, 'Peri_infarct': 10,
-    'Stroke_isotype': 11, 'Stroke_antiVCAM1': 12, 'Stroke_antiVLA4': 13,
-  };
-  return order[cond] ?? 99;
+/* Helper: mean expression for a single gene in (dataset, cell_type, condition) */
+function exprMean(dataset, cellType, cond, gene) {
+  const k = `${dataset}|${cellType}|${cond}|${gene}`;
+  const row = IDX.expr.get(k);
+  return row && typeof row.mean_expr === 'number' ? row.mean_expr : null;
 }
-const STROKE_COLORS = ['#AED6F1','#85C1E9','#5DADE2','#3498DB','#2E86C1','#2874A6','#1F618D','#1A5276','#154360','#0D2B4E','#0A2342','#071A30','#040F1E'];
+
+/* Helper: Δ expr for a single gene (stroke − mean across sham/control conditions) */
+function exprDelta(dataset, cellType, cond, gene) {
+  const s = exprMean(dataset, cellType, cond, gene);
+  if (s === null) return null;
+  const ctrls = ctrlConds(dataset).map(c => exprMean(dataset, cellType, c, gene)).filter(v => v !== null);
+  if (!ctrls.length) return null;
+  const ctrlMean = ctrls.reduce((a, b) => a + b, 0) / ctrls.length;
+  return s - ctrlMean;
+}
 
 function renderGene() {
   const gene = document.getElementById('ge-gene-input').value.trim();
-  const dataset = document.getElementById('ge-dataset').value;
+  const ctFocus = document.getElementById('ge-celltype').value;
+  const mode = document.querySelector('input[name="ge-mode"]:checked').value;
   if (!gene) return;
-  const rows = DATA.gene_expr.filter(r => r.gene === gene && r.dataset === dataset);
-  if (!rows.length) {
-    Plotly.react('chart-gene', [], { title: `No data for ${gene} in ${dataset}` }, { responsive: true });
-    return;
-  }
-  const pathway = rows[0].pathway;
+
+  // Find pathway annotation for the gene, if present in gene_expr
+  const geneRow = DATA.gene_expr.find(r => r.gene === gene);
+  const pathway = geneRow ? geneRow.pathway : '(unknown)';
   const badge = document.getElementById('ge-pathway-badge');
   badge.textContent = pathway;
-  const firstPw = pathway.split('/')[0].toLowerCase();
+  const firstPw = (pathway.split('/')[0] || 'other').toLowerCase();
   badge.className = `gene-pathway-badge pathway-${firstPw}`;
+
+  if (!IDX.knownGenes.has(gene)) {
+    document.getElementById('ge-subtitle').innerHTML =
+      `<span style="color:#C0392B">Gene <strong>${gene}</strong> is not in the 251-gene meta-analysis set.</span>`;
+    Plotly.react('chart-gene', [], { height: 300 }, { responsive: true });
+    return;
+  }
+
   document.getElementById('ge-subtitle').innerHTML =
-    `Showing expression of <strong>${gene}</strong> (${pathway}) across cell types and conditions in <strong>${dataset}</strong>`;
+    `Showing <strong>${gene}</strong> (${pathway}) as <strong>${mode === 'delta' ? 'Δ vs sham' : 'absolute expression'}</strong> across every dataset × timepoint.`;
 
-  const conditions = [...new Set(rows.map(r => r.condition))].sort((a,b)=>conditionOrder(a)-conditionOrder(b));
-  const cellTypes  = CT_ORDER.filter(ct => rows.some(r => r.cell_type === ct));
-  const strokeConds = conditions.filter(c => !rows.find(r => r.condition === c)?.is_control);
-  const condColor = {};
-  conditions.forEach(c => {
-    const isCtrl = rows.find(r => r.condition === c)?.is_control;
-    if (isCtrl) condColor[c] = '#999';
-    else { const idx = strokeConds.indexOf(c); condColor[c] = STROKE_COLORS[Math.min(idx, STROKE_COLORS.length - 1)]; }
-  });
+  const cols = expandedStrokeCols();
+  const xLabels = cols.map(c => c.shortLabel);
 
-  const traces = conditions.map(cond => {
-    const cr = rows.filter(r => r.condition === cond);
-    return {
-      type: 'bar', name: cond, x: cellTypes,
-      y: cellTypes.map(ct => { const r = cr.find(r=>r.cell_type===ct); return r ? r.mean_expr : null; }),
-      marker: { color: condColor[cond] },
-      hovertemplate: `<b>${gene}</b><br>%{x}<br>${cond}: %{y:.4f}<extra></extra>`,
+  const allCells = CT_ORDER.filter(ct => DATA.datasets.some(d => d.cell_types.includes(ct)));
+  const cellTypes = ctFocus === 'all' ? allCells : [ctFocus];
+
+  const z = cellTypes.map(ct => cols.map(col =>
+    mode === 'delta'
+      ? exprDelta(col.dataset, ct, col.condition, gene)
+      : exprMean(col.dataset, ct, col.condition, gene)));
+  const text = cellTypes.map(ct => cols.map(col => {
+    const v = mode === 'delta'
+      ? exprDelta(col.dataset, ct, col.condition, gene)
+      : exprMean(col.dataset, ct, col.condition, gene);
+    if (v === null) return '(no data)';
+    return `Gene: ${gene}<br>Dataset: ${col.dataset}<br>Day ${col.days} (${col.bin})<br>Cell type: ${ct}<br>${mode === 'delta' ? 'Δ expr (stroke − ctrl): ' + v.toFixed(3) : 'Mean expr: ' + v.toFixed(3)}`;
+  }));
+
+  // Symmetric scale for delta; positive scale for absolute
+  const flat = z.flat().filter(v => v !== null && !isNaN(v));
+  let trace;
+  if (mode === 'delta') {
+    const mx = flat.length ? Math.max(0.2, Math.max(...flat.map(v => Math.abs(v)))) : 1;
+    trace = {
+      type: 'heatmap', z, x: xLabels, y: cellTypes, text,
+      hovertemplate: '%{text}<extra></extra>',
+      colorscale: CMAP_DIVERGING,
+      zmin: -mx, zmax: mx,
+      colorbar: { title: `Δ ${gene}`, thickness: 14, len: 0.8 },
     };
-  });
+  } else {
+    const mn = flat.length ? Math.min(...flat) : 0;
+    const mx = flat.length ? Math.max(...flat) : 1;
+    trace = {
+      type: 'heatmap', z, x: xLabels, y: cellTypes, text,
+      hovertemplate: '%{text}<extra></extra>',
+      colorscale: 'Viridis',
+      zmin: mn, zmax: mx,
+      colorbar: { title: `${gene}<br>(log-norm)`, thickness: 14, len: 0.8 },
+    };
+  }
+
+  // Time-bin stripe above columns
+  const shapes = cols.map((col, i) => ({
+    type: 'rect', xref: 'x', yref: 'paper',
+    x0: i - 0.5, x1: i + 0.5, y0: 1.00, y1: 1.03,
+    line: { width: 0 }, fillcolor: TIME_BIN_COLOR[col.bin], opacity: 0.7,
+  }));
+
   const layout = {
-    barmode: 'group',
-    xaxis: { title: 'Cell type', tickangle: -30, tickfont: { size: 11 } },
-    yaxis: { title: 'Mean expression (log-norm)', gridcolor: '#eee' },
-    legend: { orientation: 'h', y: -0.25 },
-    margin: { l: 60, r: 20, t: 20, b: 100 },
-    paper_bgcolor: 'white', plot_bgcolor: '#fafafa',
-    height: 420,
+    shapes,
+    annotations: [
+      { x: 1.02, y: 1.02, xref: 'paper', yref: 'paper', xanchor: 'left',
+        text: `<span style="color:${TIME_BIN_COLOR.Acute}">■ Acute</span> · <span style="color:${TIME_BIN_COLOR.Subacute}">■ Subacute</span> · <span style="color:${TIME_BIN_COLOR.Chronic}">■ Chronic</span>`,
+        showarrow: false, font: { size: 9 },
+      }
+    ],
+    xaxis: { tickangle: -60, tickfont: { size: 9 }, automargin: true },
+    yaxis: { autorange: 'reversed', tickfont: { size: 10 } },
+    margin: { l: 115, r: 110, t: 90, b: 130 },
+    paper_bgcolor: 'white', plot_bgcolor: 'white',
+    height: Math.max(380, cellTypes.length * 34 + 200),
   };
-  Plotly.react('chart-gene', traces, layout, { responsive: true, displayModeBar: false });
+  Plotly.react('chart-gene', [trace], layout, { responsive: true, displayModeBar: false });
 }
 
 /* ============================================================
@@ -1727,9 +2092,9 @@ function renderUmap() {
     type: 'scatter', mode: 'markers',
     x: xs, y: ys,
     marker: {
-      size: sizes, color: cs, colorscale: 'RdBu', reversescale: true,
+      size: sizes, color: cs, colorscale: CMAP_DIVERGING,
       cmin: -mx, cmax: mx,
-      colorbar: { title: `Δ ${pw}`, thickness: 14, len: 0.7 },
+      colorbar: { title: `Δ ${pw}<br>(stroke − ctrl)`, thickness: 14, len: 0.7 },
       line: { color: 'rgba(0,0,0,0.15)', width: 0.5 },
     },
     text: ts, hovertemplate: '%{text}<extra></extra>',
@@ -1776,8 +2141,10 @@ function wireEvents() {
     MODULES = JSON.parse(JSON.stringify(DEFAULT_MODULES));
     saveModules(); renderModuleEditor(); renderCellDeathHeatmap();
   });
-  document.querySelectorAll('input[name="cd-score-metric"]').forEach(r =>
-    r.addEventListener('change', renderCellDeathReal));
+  document.querySelectorAll('input[name="cd-view"]').forEach(r =>
+    r.addEventListener('change', renderCellDeathHeatmap));
+  const cdDs = document.getElementById('cd-single-ds');
+  if (cdDs) cdDs.addEventListener('change', renderCellDeathHeatmap);
 
   // Temporal controls
   document.getElementById('tm-celltype').addEventListener('change', renderTemporal);
