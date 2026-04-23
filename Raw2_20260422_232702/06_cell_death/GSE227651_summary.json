@@ -1,0 +1,82 @@
+{
+  "dataset": "GSE227651",
+  "total_cells": 58106,
+  "n_clusters": 27,
+  "cell_types": [
+    "Astrocyte",
+    "Endothelial",
+    "Macrophage",
+    "Microglia",
+    "NK_cell",
+    "Neuron",
+    "OPC",
+    "Oligodendrocyte",
+    "Pericyte",
+    "T_cell"
+  ],
+  "conditions": [
+    "Sham",
+    "Stroke"
+  ],
+  "n_marker_genes_found": 138,
+  "n_marker_genes_missing": 12,
+  "missing_genes": [
+    "Irg1",
+    "Chi3l3",
+    "Cxcl11",
+    "Fizz1",
+    "Ym1",
+    "Nox2",
+    "Clec7a",
+    "Lilrb4",
+    "Cd206",
+    "Mhc2",
+    "Targ1",
+    "Retnla"
+  ],
+  "cluster_annotations": {
+    "7": "NK_cell",
+    "1": "Oligodendrocyte",
+    "5": "Endothelial",
+    "18": "Astrocyte",
+    "13": "Neuron",
+    "2": "Endothelial",
+    "15": "Astrocyte",
+    "16": "Neuron",
+    "0": "Endothelial",
+    "6": "Pericyte",
+    "10": "Microglia",
+    "19": "Astrocyte",
+    "21": "Oligodendrocyte",
+    "20": "OPC",
+    "12": "Pericyte",
+    "14": "Oligodendrocyte",
+    "9": "Endothelial",
+    "23": "OPC",
+    "4": "Pericyte",
+    "24": "Oligodendrocyte",
+    "17": "Macrophage",
+    "11": "Endothelial",
+    "3": "Endothelial",
+    "22": "Endothelial",
+    "25": "T_cell",
+    "8": "Endothelial",
+    "26": "Oligodendrocyte"
+  },
+  "cell_type_counts": {
+    "Endothelial": 29305,
+    "Pericyte": 8959,
+    "Oligodendrocyte": 8669,
+    "NK_cell": 2710,
+    "Neuron": 2259,
+    "Astrocyte": 2212,
+    "Microglia": 2046,
+    "OPC": 961,
+    "Macrophage": 713,
+    "T_cell": 272
+  },
+  "condition_counts": {
+    "Stroke": 46803,
+    "Sham": 11303
+  }
+}

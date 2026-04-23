@@ -893,7 +893,7 @@ const DAYS_OF = {
   GSE244576: { Sham: 0, Stroke: 3 },
   GSE250245: { Sham: 0, Stroke_ipsi: 2, Stroke_contra: 2 },
   GSE276202: { Control: 0, Stroke_core: 30, Peri_infarct: 30 },
-  GSE279666: { Sham: 0, Control: 0, D3: 3, D14: 14 },
+  GSE279666: { Sham: 0, D3: 3, D14: 14 },
   GSE300564: { Sham: 0, Stroke_isotype: 14, Stroke_antiVCAM1: 14, Stroke_antiVLA4: 14 },
   GSE310324: { Sham: 0, Stroke: 3 },
 };
@@ -944,7 +944,7 @@ const SIG_LABELS = {
    Small (5-10 genes) curated panels for each death pathway.
    These are the *default* set of genes — users can edit them
    in the Cell Death tab, and edits persist in localStorage.
-   All default genes exist in gene_expr.json (verified).
+   All default genes are resolvable against the full-transcriptome matrices.
    ------------------------------------------------------------ */
 const DEFAULT_MODULES = {
   Apoptosis:  ['Casp3','Casp9','Bax','Bid','Bcl2l11','Fas','Trp53','Cycs'],
@@ -1004,6 +1004,13 @@ const DATA = {};
 let loadedCount = 0;
 let TOTAL_FILES = 10;
 
+/* The 9 GSE datasets with full-transcriptome expression matrices stored
+   as one compact column-major JSON per dataset in data/gene_expr_full/. */
+const FULL_DATASETS = [
+  'GSE174574','GSE197341','GSE227651','GSE244576','GSE250245',
+  'GSE276202','GSE279666','GSE300564','GSE310324',
+];
+
 function updateProgress(msg) {
   loadedCount++;
   document.getElementById('load-bar').style.width = (loadedCount / TOTAL_FILES * 100) + '%';
@@ -1011,45 +1018,119 @@ function updateProgress(msg) {
 }
 
 async function loadAllData() {
-  // Small JSON files first (fast), then the big gene-expression matrix last.
+  // Small JSON files first (fast), then per-dataset full-transcriptome matrices in parallel.
   const small = [
-    { key: 'datasets',   path: 'data/datasets.json',              msg: 'Loading datasets…' },
-    { key: 'heatmap',    path: 'data/heatmap.json',               msg: 'Loading heatmap data…' },
-    { key: 'forest',     path: 'data/forest.json',                msg: 'Loading forest plot data…' },
-    { key: 'temporal',   path: 'data/temporal.json',              msg: 'Loading temporal data…' },
-    { key: 'glial',      path: 'data/glial.json',                 msg: 'Loading glial state data…' },
-    { key: 'cellDeath',  path: 'data/cell_death_real.json',       msg: 'Loading real cell-death scores…' },
-    { key: 'coreScores', path: 'data/core_gene_scores.json',      msg: 'Loading core module scores…' },
-    { key: 'signatures', path: 'data/cell_death_signatures.json', msg: 'Loading pathway gene signatures…' },
-    { key: 'glialFull',  path: 'data/glial_full.json',            msg: 'Loading extended glial scores…' },
-    { key: 'ligRec',     path: 'data/ligand_receptor.json',       msg: 'Loading ligand-receptor pairs…' },
-    { key: 'drugs',      path: 'data/drug_targets.json',          msg: 'Loading drug targets…' },
+    { key: 'datasets',    path: 'data/datasets.json',              msg: 'Loading datasets…' },
+    { key: 'heatmap',     path: 'data/heatmap.json',               msg: 'Loading heatmap data…' },
+    { key: 'forest',      path: 'data/forest.json',                msg: 'Loading forest plot data…' },
+    { key: 'temporal',    path: 'data/temporal.json',              msg: 'Loading temporal data…' },
+    { key: 'glial',       path: 'data/glial.json',                 msg: 'Loading glial state data…' },
+    { key: 'cellDeath',   path: 'data/cell_death_real.json',       msg: 'Loading real cell-death scores…' },
+    { key: 'coreScores',  path: 'data/core_gene_scores.json',      msg: 'Loading core module scores…' },
+    { key: 'signatures',  path: 'data/cell_death_signatures.json', msg: 'Loading pathway gene signatures…' },
+    { key: 'glialFull',   path: 'data/glial_full.json',            msg: 'Loading extended glial scores…' },
+    { key: 'ligRec',      path: 'data/ligand_receptor.json',       msg: 'Loading ligand-receptor pairs…' },
+    { key: 'drugs',       path: 'data/drug_targets.json',          msg: 'Loading drug targets…' },
+    { key: 'genePathway', path: 'data/gene_pathway.json',          msg: 'Loading pathway annotations…' },
   ];
-  const large = { key: 'gene_expr', path: 'data/gene_expr.json', msg: 'Loading gene expression matrix (~7 MB)…' };
-  TOTAL_FILES = small.length + 1;
+  TOTAL_FILES = small.length + FULL_DATASETS.length;
   for (const f of small) {
     const r = await fetch(f.path); DATA[f.key] = await r.json(); updateProgress(f.msg);
   }
-  document.getElementById('load-status').textContent = large.msg;
-  const r = await fetch(large.path); DATA[large.key] = await r.json(); updateProgress('Ready!');
+  // Parallel fetch of all 9 full-transcriptome matrices (~28 MB raw, ~8 MB gzipped over HTTP).
+  document.getElementById('load-status').textContent = 'Loading full-transcriptome matrices…';
+  DATA.geneExprFull = {};
+  await Promise.all(FULL_DATASETS.map(async ds => {
+    const r = await fetch(`data/gene_expr_full/${ds}.json`);
+    const obj = await r.json();
+    DATA.geneExprFull[ds] = obj;
+    updateProgress(`Loaded ${ds} (${obj.n_genes.toLocaleString()} genes)`);
+  }));
   buildIndexes();
 }
 
 /* ============================================================
-   INDEXING — for fast gene-module scoring on the client.
-   Builds a Map keyed on `${dataset}|${cell_type}|${condition}|${gene}`
-   -> mean_expr, and a Set of known genes.
+   INDEXING — memory-efficient lazy lookup over per-dataset matrices.
+
+   For each dataset we keep:
+     • geneIdx[ds] : Map<gene → rowIdx>
+     • colIdx[ds]  : Map<"ct|cond" → colIdx>
+     • byDataset[ds] : { conds, cells, ctrlConds } from column metadata
+   IDX.knownGenes is the union across all datasets (~25 k genes).
+
+   IDX.expr mimics the old Map API so every downstream function that
+   called IDX.expr.get(key) keeps working unchanged. The "get" computes
+   the value on the fly from the compact per-dataset matrix.
    ------------------------------------------------------------ */
-const IDX = { expr: new Map(), knownGenes: new Set(), byDataset: new Map() };
+const IDX = {
+  knownGenes: new Set(),
+  byDataset:  new Map(),
+  genePathway: new Map(),
+  geneIdx: {},          // {ds: Map(gene → rowIdx)}
+  colIdx:  {},          // {ds: Map("ct|cond" → colIdx)}
+  colMeta: {},          // {ds: [{cell_type, condition, is_control}, …]}
+  expr: {
+    /* key = `${dataset}|${cell_type}|${condition}|${gene}` */
+    get(key) {
+      if (typeof key !== 'string') return undefined;
+      const i1 = key.indexOf('|');
+      const i2 = key.indexOf('|', i1 + 1);
+      const i3 = key.indexOf('|', i2 + 1);
+      if (i1 < 0 || i2 < 0 || i3 < 0) return undefined;
+      const ds   = key.slice(0, i1);
+      const ct   = key.slice(i1 + 1, i2);
+      const cond = key.slice(i2 + 1, i3);
+      const gene = key.slice(i3 + 1);
+      const obj = DATA.geneExprFull && DATA.geneExprFull[ds];
+      if (!obj) return undefined;
+      const gi = IDX.geneIdx[ds] && IDX.geneIdx[ds].get(gene);
+      if (gi == null) return undefined;
+      const ci = IDX.colIdx[ds] && IDX.colIdx[ds].get(`${ct}|${cond}`);
+      if (ci == null) return undefined;
+      const v = obj.matrix[gi][ci];
+      if (v == null || Number.isNaN(v)) return undefined;
+      const meta = obj.columns[ci];
+      return {
+        dataset: ds, cell_type: ct, condition: cond, gene,
+        mean_expr: v,
+        is_control: meta.is_control,
+        pathway: IDX.genePathway.get(gene) || null,
+      };
+    },
+  },
+};
 
 function buildIndexes() {
-  for (const r of DATA.gene_expr) {
-    IDX.knownGenes.add(r.gene);
-    const k = `${r.dataset}|${r.cell_type}|${r.condition}|${r.gene}`;
-    IDX.expr.set(k, r);
-    if (!IDX.byDataset.has(r.dataset)) IDX.byDataset.set(r.dataset, { conds: new Set(), cells: new Set() });
-    IDX.byDataset.get(r.dataset).conds.add(r.condition);
-    IDX.byDataset.get(r.dataset).cells.add(r.cell_type);
+  // Gene → pathway annotation for the 251 curated cell-death effector genes.
+  for (const [g, pw] of Object.entries(DATA.genePathway || {})) {
+    IDX.genePathway.set(g, pw);
+  }
+  // Build per-dataset row / column indexes from the compact matrices.
+  for (const ds of FULL_DATASETS) {
+    const obj = DATA.geneExprFull && DATA.geneExprFull[ds];
+    if (!obj) continue;
+
+    // Gene → row index
+    const gmap = new Map();
+    for (let i = 0; i < obj.genes.length; i++) {
+      gmap.set(obj.genes[i], i);
+      IDX.knownGenes.add(obj.genes[i]);
+    }
+    IDX.geneIdx[ds] = gmap;
+
+    // (cell_type|condition) → column index
+    const cmap = new Map();
+    const ctSet = new Set(), condSet = new Set(), ctrlSet = new Set();
+    for (let i = 0; i < obj.columns.length; i++) {
+      const c = obj.columns[i];
+      cmap.set(`${c.cell_type}|${c.condition}`, i);
+      ctSet.add(c.cell_type);
+      condSet.add(c.condition);
+      if (c.is_control) ctrlSet.add(c.condition);
+    }
+    IDX.colIdx[ds]  = cmap;
+    IDX.colMeta[ds] = obj.columns;
+    IDX.byDataset.set(ds, { conds: condSet, cells: ctSet, ctrlConds: ctrlSet });
   }
 }
 
@@ -1072,9 +1153,9 @@ function controlCondsFor(dataset) {
   for (const c of info.conds) {
     // Take any record to ask if it's control
     for (const ct of info.cells) {
-      const k = `${dataset}|${ct}|${c}|${DATA.gene_expr.find(r=>r.dataset===dataset&&r.condition===c)?.gene || ''}`;
-      const row = IDX.expr.get(k);
-      if (row && row.is_control) { out.push(c); break; }
+      // Use column metadata (is_control stored on each column) rather than scanning records
+      const ctrls = IDX.byDataset.get(dataset)?.ctrlConds;
+      if (ctrls && ctrls.has(c)) { out.push(c); break; }
     }
   }
   return out;
@@ -1101,9 +1182,7 @@ function moduleDelta(dataset, cellType, genes) {
   // Find any record for this dataset to pick out control/stroke labels
   const controls = [], strokes = [];
   for (const c of info.conds) {
-    const sample = DATA.gene_expr.find(r => r.dataset === dataset && r.condition === c);
-    if (!sample) continue;
-    (sample.is_control ? controls : strokes).push(c);
+    (info.ctrlConds.has(c) ? controls : strokes).push(c);
   }
   // Mean-of-means across control labels and stroke labels
   function avg(conds) {
@@ -2071,7 +2150,8 @@ function renderMicrogliaTimeline() {
    Values = Δ expr vs sham, or absolute mean expression.
    ------------------------------------------------------------ */
 function initGeneExplorer() {
-  const genes = [...new Set(DATA.gene_expr.map(r => r.gene))].sort();
+  // Union of genes present in any per-dataset full-transcriptome matrix (~25 k)
+  const genes = [...IDX.knownGenes].sort();
   const dl = document.getElementById('gene-datalist');
   dl.innerHTML = genes.map(g => `<option value="${g}">`).join('');
   document.getElementById('ge-gene-input').addEventListener('input', debounce(renderGene, 250));
@@ -2103,26 +2183,24 @@ function renderGene() {
   const mode = document.querySelector('input[name="ge-mode"]:checked').value;
   if (!gene) return;
 
-  // Find pathway annotation for the gene, if present in gene_expr
-  const geneRow = DATA.gene_expr.find(r => r.gene === gene);
-  const pathway = geneRow ? geneRow.pathway : '(unknown)';
+  // Pathway annotation: curated 251 effector genes carry a pathway label;
+  // the remaining full-transcriptome genes show a neutral badge.
+  const pathway = IDX.genePathway.get(gene) || '(full transcriptome)';
   const badge = document.getElementById('ge-pathway-badge');
   badge.textContent = pathway;
-  const firstPw = (pathway.split('/')[0] || 'other').toLowerCase();
-  badge.className = `gene-pathway-badge pathway-${firstPw}`;
+  const firstPw = (pathway.split('/')[0] || 'other').toLowerCase().replace(/[^a-z0-9]/g, '');
+  badge.className = `gene-pathway-badge pathway-${firstPw || 'other'}`;
 
   if (!IDX.knownGenes.has(gene)) {
-    // Honest message: the pre-computed expression matrix is limited, but we
-    // still let the user look the gene up externally without leaving the site.
+    // Still possible for typos / non-mouse symbols. Keep the external-lookup fallback.
     const ncbi  = `https://www.ncbi.nlm.nih.gov/gene/?term=${encodeURIComponent(gene)}`;
     const gtex  = `https://www.gtexportal.org/home/gene/${encodeURIComponent(gene)}`;
     const ensbl = `https://www.ensembl.org/Multi/Search/Results?q=${encodeURIComponent(gene)}`;
     document.getElementById('ge-subtitle').innerHTML =
       `<div style="color:#B45309;background:#FFF7ED;border:1px solid #FED7AA;padding:10px 12px;border-radius:6px;line-height:1.55">
-         <b>${gene}</b> is not yet in the curated expression matrix (251 effector genes).
-         The site ships with pre-computed <code>AverageExpression()</code> values for a focused
-         gene panel; a full-transcriptome matrix would require re-running the upstream
-         Seurat pipeline on each dataset without gene filtering.<br>
+         <b>${gene}</b> is not present in any of the 9 per-dataset matrices
+         (union ~${IDX.knownGenes.size.toLocaleString()} mouse gene symbols).
+         Check spelling or verify it is an annotated mouse gene.<br>
          <span style="font-size:0.82rem">External lookup:
            <a href="${ncbi}"  target="_blank" rel="noopener">NCBI Gene</a> ·
            <a href="${ensbl}" target="_blank" rel="noopener">Ensembl</a> ·

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Stroke Vascular Datasets — Overview</title>
+<style>
+:root{--pri:#1a3a5c;--acc:#c0392b;--bg:#f4f6f8;--card:#fff;--bdr:#dde1e7;--txt:#1a1a2e;--mut:#6c757d;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:13px;color:var(--txt);background:var(--bg);line-height:1.6;}
+a{color:#2980b9;text-decoration:none;}
+a:hover{text-decoration:underline;}
+.hdr{background:linear-gradient(135deg,#1a3a5c 0%,#2c5f8a 100%);color:#fff;padding:28px 48px 20px;}
+.hdr h1{font-size:20px;font-weight:700;margin-bottom:4px;}
+.hdr .sub{font-size:12px;opacity:.8;}
+.content{padding:24px 48px 48px;max-width:1300px;}
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;}
+.stat{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:12px 20px;text-align:center;min-width:120px;}
+.stat .n{font-size:26px;font-weight:700;color:var(--pri);}
+.stat .l{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.section{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:18px 22px;margin-bottom:20px;}
+.section h2{font-size:14px;font-weight:700;color:var(--pri);border-bottom:2px solid var(--bdr);padding-bottom:7px;margin-bottom:14px;}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:var(--pri);color:#fff;padding:7px 10px;text-align:left;font-weight:600;white-space:nowrap;}
+td{padding:6px 10px;border-bottom:1px solid var(--bdr);vertical-align:top;}
+tr:hover td{background:#f0f4f8;}
+.b{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;}
+.bdone{background:#d5f5e3;color:#1a6b3c;}
+.bt1{background:#e8daef;color:#7d3c98;}
+.bt2{background:#d6eaf8;color:#1a5276;}
+.bt3{background:#eaecee;color:#5d6d7e;}
+.bhuman{background:#fde8d8;color:#a04000;}
+.brat{background:#fef9e7;color:#7d6608;}
+.bnhp{background:#e8daef;color:#7d3c98;}
+.bmouse{background:#d6eaf8;color:#1a5276;}
+code{background:#f0f4f8;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace;}
+.ftr{background:#1a3a5c;color:#fff;padding:14px 48px;font-size:11px;opacity:.85;margin-top:24px;}
+.folder-tree{background:#f8f9fa;border:1px solid var(--bdr);border-radius:6px;padding:14px 18px;font-family:monospace;font-size:12px;line-height:1.9;margin:14px 0;}
+.folder-tree .dir{color:#1a3a5c;font-weight:700;}
+.folder-tree .file{color:#444;margin-left:20px;}
+.folder-tree .desc{color:#888;font-size:11px;margin-left:8px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>Stroke Brain Vascular Datasets — Project Overview</h1>
+  <div class="sub">GEO accessions, analysis status, result files, and folder structure &nbsp;|&nbsp; Updated 2026-04-09</div>
+</div>
+<div class="content">
+
+<div class="stats">
+  <div class="stat"><div class="n" style="color:#1a6b3c;">5</div><div class="l">Datasets analyzed</div></div>
+  <div class="stat"><div class="n" style="color:#7d3c98;">17</div><div class="l">Datasets queued</div></div>
+  <div class="stat"><div class="n">22</div><div class="l">Total catalogued</div></div>
+  <div class="stat"><div class="n">9</div><div class="l">Class A–C targets</div></div>
+  <div class="stat"><div class="n">78</div><div class="l">Curated surface genes</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">Species covered</div></div>
+</div>
+
+<div class="section" id="analyzed">
+  <h2>&#10003; Analyzed Datasets (5)</h2>
+  <div class="tw"><table>
+    <thead><tr>
+      <th>GEO Accession</th><th>Publication</th><th>Species</th><th>Data type</th>
+      <th>Cell focus</th><th>Stroke model</th><th>Key finding</th><th>Result file</th>
+    </tr></thead>
+    <tbody><tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE223744" target="_blank"><code>GSE223744</code></a></td>
+      <td>Arbaizar-Rovirosa et al. 2023 (J Neuroinflammation)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>Bulk RNA-seq</td>
+      <td>CD31+ sorted brain ECs</td>
+      <td>Permanent MCAO</td>
+      <td style="font-size:11px;color:#555;">Primary EC dataset. 6 Class A–C targets confirmed. ECSCR top hit (log2FC=2.85). 78-gene curated surface target list derived.</td>
+      <td style="font-size:11px;"><code>GSE223744_DESeq2_ischemia_vs_control_ECs.csv</code></td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE225948" target="_blank"><code>GSE225948</code></a></td>
+      <td>Garcia-Bonilla et al. 2024 (Nature Immunology)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq</td>
+      <td>Sorted brain ECs (scRNA-seq cluster)</td>
+      <td>Transient MCAO</td>
+      <td style="font-size:11px;color:#555;">Independent EC validation. Confirms ECSCR, CD93, PLAUR, SEMA6D at Day 2. 4,885 sorted ECs.</td>
+      <td style="font-size:11px;"><code>GSE225948_DESeq2_pseudobulk_StrokeD2_vs_Sham_ECs.csv</code></td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE234052" target="_blank"><code>GSE234052</code></a></td>
+      <td>Buizza et al. 2023 (Translational Stroke Research)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq</td>
+      <td>Brain pericytes (scRNA-seq cluster)</td>
+      <td>Photothrombotic pMCAO</td>
+      <td style="font-size:11px;color:#555;">Pericyte dataset. Confirms PLAUR, IFITM1, NT5E in pericytes. Cross-validates EC targets in NVU context.</td>
+      <td style="font-size:11px;"><code>GSE234052_DEG_ipsi_vs_contra.csv</code></td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE233815" target="_blank"><code>GSE233815</code></a></td>
+      <td>Zucha et al. 2024 (PNAS)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>Bulk RNA-seq</td>
+      <td>Whole brain (bulk)</td>
+      <td>Permanent MCAO</td>
+      <td style="font-size:11px;color:#555;">Whole-brain confirmatory. 29/78 targets significant. HMOX1 highest FC (5.68 at 3D). ECSCR confirmed (log2FC=2.97).</td>
+      <td style="font-size:11px;"><code>GSE233815_DESeq2_MCAO_vs_Ctrl_surface_targets.csv</code></td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE9391" target="_blank"><code>GSE9391</code></a></td>
+      <td>Mitsios et al. 2007 (Neuropathology & Applied Neurobiology)</td>
+      <td><span class="b bhuman">Human</span></td>
+      <td>Microarray (GPL127)</td>
+      <td>Post-mortem stroke brain (bulk)</td>
+      <td>Human post-mortem infarct</td>
+      <td style="font-size:11px;color:#555;">Human validation. SELE (log2FC=7.59, p=0.031) and ACKR1 (log2FC=8.25, p=0.023) confirmed in human stroke infarct.</td>
+      <td style="font-size:11px;"><code>GSE9391_limma_stroke_vs_ctrl_surface_targets.csv</code></td>
+    </tr></tbody>
+  </table></div>
+</div>
+
+<div class="section" id="queued">
+  <h2>&#9654; Datasets Queued for Analysis (17)</h2>
+  <div class="tw"><table>
+    <thead><tr>
+      <th>GEO Accession</th><th>Priority</th><th>Publication</th><th>Species</th>
+      <th>Data type</th><th>Stroke model</th><th>Why analyze</th>
+    </tr></thead>
+    <tbody><tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE163752" target="_blank"><code>GSE163752</code></a></td>
+      <td><span class="b bt1">★★★ Highest</span></td>
+      <td>Spitzer/Kavi 2022 (Acta Neuropathologica)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>Bulk RNA-seq (FACS-sorted ECs + pericytes)</td>
+      <td>tMCAO 1h/23h — 24h timepoint</td>
+      <td style="font-size:11px;color:#555;">FACS-sorted ECs AND pericytes, 6 bio reps, ipsi vs. contra — best dataset for EC DEG after GSE223744</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE265949" target="_blank"><code>GSE265949</code></a></td>
+      <td><span class="b bt1">★★★ Highest</span></td>
+      <td>Göttert 2025 (JAHA)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>Bulk RNA-seq (FACS-sorted ECs)</td>
+      <td>MCAo 30min — 72h timepoint</td>
+      <td style="font-size:11px;color:#555;">FACS-sorted ECs at 72h — extends temporal coverage; identifies sustained targets</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE256490" target="_blank"><code>GSE256490</code></a></td>
+      <td><span class="b bt2">★★★ High</span></td>
+      <td>Wälchli et al. 2024 (Nature)</td>
+      <td><span class="b bhuman">Human</span></td>
+      <td>scRNA-seq (606K cells)</td>
+      <td>None (human brain atlas, fetal+adult+disease)</td>
+      <td style="font-size:11px;color:#555;">Gold-standard human brain EC atlas — validate human translatability of all 9 Class A–C targets</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE279666" target="_blank"><code>GSE279666</code></a></td>
+      <td><span class="b bt2">★★★ High</span></td>
+      <td>Ikegami 2025 (Exp Neurol) — snRNA-seq</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>snRNA-seq</td>
+      <td>dMCAO — Day 3 + Day 14</td>
+      <td style="font-size:11px;color:#555;">Multi-timepoint snRNA-seq Day3+Day14 — temporal dynamics of EC surface targets</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE146930" target="_blank"><code>GSE146930</code></a></td>
+      <td><span class="b bt2">★★★ High</span></td>
+      <td>Bernier 2025 (Nat Neurosci)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq (pericytes)</td>
+      <td>Stroke recovery (Hic1+ fate-tracking)</td>
+      <td style="font-size:11px;color:#555;">Pericyte scRNA-seq stroke recovery — pericyte surface targets + EC-pericyte crosstalk</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE174574" target="_blank"><code>GSE174574</code></a></td>
+      <td><span class="b bt2">★★ Medium</span></td>
+      <td>Zheng et al. 2021 (JCBFM)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq</td>
+      <td>MCAO — 24h</td>
+      <td style="font-size:11px;color:#555;">EC subtype resolution (arterial/capillary/venous) at 24h — AV-subtype specificity of targets</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE250597" target="_blank"><code>GSE250597</code></a></td>
+      <td><span class="b bt2">★★ Medium</span></td>
+      <td>Loan et al. 2024 (Theranostics)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq (pericytes)</td>
+      <td>Ischemic stroke — acute+subacute</td>
+      <td style="font-size:11px;color:#555;">Pericyte heterogeneity post-stroke — NG2+ vs. Tbx18+ pericyte subtype-specific targets</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE250245" target="_blank"><code>GSE250245</code></a></td>
+      <td><span class="b bt2">★★ Medium</span></td>
+      <td>Bormann et al. 2024 (Nat Commun)</td>
+      <td><span class="b brat">Rat</span></td>
+      <td>snRNA-seq</td>
+      <td>pMCAO — 48h (sham/moderate/severe)</td>
+      <td style="font-size:11px;color:#555;">Rat snRNA-seq with severity stratification — cross-species validation</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE283970" target="_blank"><code>GSE283970</code></a></td>
+      <td><span class="b bt2">★★ Medium</span></td>
+      <td>Mechtouff 2025 (NHP model)</td>
+      <td><span class="b bnhp">NHP</span></td>
+      <td>Bulk RNA-seq</td>
+      <td>tMCAO + EVT — Day 30</td>
+      <td style="font-size:11px;color:#555;">NHP thrombectomy model — most clinically relevant cross-species validation</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE256491" target="_blank"><code>GSE256491</code></a></td>
+      <td><span class="b bt2">★★ Medium</span></td>
+      <td>Wälchli 2024 — extra individuals</td>
+      <td><span class="b bhuman">Human</span></td>
+      <td>scRNA-seq</td>
+      <td>None (atlas)</td>
+      <td style="font-size:11px;color:#555;">Additional human samples for Wälchli atlas</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE256492" target="_blank"><code>GSE256492</code></a></td>
+      <td><span class="b bt2">★★ Medium</span></td>
+      <td>Wälchli 2024 — bulk RNA-seq</td>
+      <td><span class="b bhuman">Human</span></td>
+      <td>Bulk RNA-seq</td>
+      <td>None (atlas)</td>
+      <td style="font-size:11px;color:#555;">Bulk RNA-seq companion to Wälchli atlas</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE98816" target="_blank"><code>GSE98816</code></a></td>
+      <td><span class="b bt3">★ Reference</span></td>
+      <td>He/Vanlandewijck et al. 2018 (Sci Data)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq (SmartSeq2)</td>
+      <td>None (healthy reference)</td>
+      <td style="font-size:11px;color:#555;">Healthy mouse brain vascular reference — 15 EC/pericyte clusters, baseline expression</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE146007" target="_blank"><code>GSE146007</code></a></td>
+      <td><span class="b bt3">★ Supporting</span></td>
+      <td>Mäe et al. 2020 (Circ Res)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq</td>
+      <td>Pericyte-deficient mouse</td>
+      <td style="font-size:11px;color:#555;">EC response to pericyte loss — BBB EC transcriptome without pericyte support</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE109233" target="_blank"><code>GSE109233</code></a></td>
+      <td><span class="b bt3">★ Supporting</span></td>
+      <td>Carlsson et al. 2018 (PLoS ONE)</td>
+      <td><span class="b bhuman">Human</span></td>
+      <td>Microarray</td>
+      <td>OGD in vitro (2h, 6h)</td>
+      <td style="font-size:11px;color:#555;">Human brain pericytes under OGD — pericyte ischemia surface markers</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE311086" target="_blank"><code>GSE311086</code></a></td>
+      <td><span class="b bt3">★ Supporting</span></td>
+      <td>Liu 2025 (unpublished)</td>
+      <td><span class="b bhuman">Human</span></td>
+      <td>Bulk RNA-seq</td>
+      <td>OGD in vitro</td>
+      <td style="font-size:11px;color:#555;">hCMEC/D3 OGD — in vitro human EC ischemia (limited utility)</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE279665" target="_blank"><code>GSE279665</code></a></td>
+      <td><span class="b bt3">★ Supporting</span></td>
+      <td>Ikegami 2025 — healthy baseline scRNA-seq</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>scRNA-seq</td>
+      <td>None (healthy baseline)</td>
+      <td style="font-size:11px;color:#555;">Healthy baseline scRNA-seq companion to GSE279666</td>
+    </tr>
+<tr>
+      <td><a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE233814" target="_blank"><code>GSE233814</code></a></td>
+      <td><span class="b bt3">★ Supporting</span></td>
+      <td>Spatial transcriptomics glial response (PMID 39499634)</td>
+      <td><span class="b bmouse">Mouse</span></td>
+      <td>Spatial transcriptomics + scRNA-seq</td>
+      <td>dMCAO</td>
+      <td style="font-size:11px;color:#555;">Spatial transcriptomics stroke — glial focus but EC/pericyte present</td>
+    </tr></tbody>
+  </table></div>
+</div>
+
+<div class="section" id="files">
+  <h2>&#128193; Results Folder Structure</h2>
+  <div class="folder-tree">
+<span class="dir">results/</span>
+<span class="dir">├── 01_DEG_analysis/</span><span class="desc">  Per-dataset DESeq2 / limma outputs</span>
+<span class="file">│   ├── GSE223744_DESeq2_ischemia_vs_control_ECs.csv</span>
+<span class="file">│   ├── GSE223744_upregulated_ischemic_ECs.csv</span>
+<span class="file">│   ├── GSE225948_DESeq2_pseudobulk_StrokeD2_vs_Sham_ECs.csv</span>
+<span class="file">│   ├── GSE225948_DEG_stroke_vs_sham_ECs.csv</span>
+<span class="file">│   ├── GSE234052_DEG_ipsi_vs_contra.csv</span>
+<span class="file">│   ├── GSE233815_DESeq2_MCAO_vs_Ctrl_surface_targets.csv</span>
+<span class="file">│   ├── GSE9391_limma_stroke_vs_ctrl_surface_targets.csv</span>
+<span class="file">│   ├── GSE9391_limma_stroke_vs_ctrl_all_genes.csv</span>
+<span class="file">│   ├── cross_dataset_consensus_all_genes.csv</span>
+<span class="file">│   └── cross_dataset_consensus_2plus_datasets.csv</span>
+<span class="dir">├── 02_target_curation/</span><span class="desc">  Curated surface target gene lists</span>
+<span class="file">│   ├── stroke_vascular_surface_targets_curated_v3.csv</span><span class="desc">  ← current (78 genes, 34 cols)</span>
+<span class="file">│   ├── stroke_vascular_surface_targets_curated_v2.csv</span>
+<span class="file">│   ├── stroke_vascular_surface_targets_curated.csv</span>
+<span class="file">│   └── stroke_EC_actionable_targets.csv</span><span class="desc">  ← 9 Class A–C targets</span>
+<span class="dir">├── 03_figures/</span><span class="desc">  All plots (PNG + SVG)</span>
+<span class="file">│   ├── heatmap_stroke_EC_targets_v3.png</span><span class="desc">  ← current heatmap (37 genes × 5 datasets)</span>
+<span class="file">│   ├── heatmap_stroke_targets_multiDataset_v2.png</span>
+<span class="file">│   ├── heatmap_stroke_surface_targets.png / .svg</span>
+<span class="file">│   ├── temporal_EC_surface_targets.png / .svg</span>
+<span class="file">│   └── venn_EC_upregulated_overlap.png / .svg</span>
+<span class="dir">├── 04_dataset_landscape/</span><span class="desc">  Dataset survey and overview</span>
+<span class="file">│   ├── analyzed_datasets_overview.csv</span><span class="desc">  ← this file (5 analyzed datasets)</span>
+<span class="file">│   ├── new_datasets_to_analyze.csv</span><span class="desc">  ← 17 queued datasets</span>
+<span class="file">│   ├── stroke_vascular_datasets_comprehensive.csv</span><span class="desc">  ← full 30-dataset table</span>
+<span class="file">│   └── stroke_vascular_dataset_landscape.html</span><span class="desc">  ← interactive landscape report</span>
+<span class="dir">├── 05_reports/</span><span class="desc">  Final HTML/MD reports</span>
+<span class="file">│   ├── report_stroke_vascular_targets_v4.html</span><span class="desc">  ← current report (with extravasation section)</span>
+<span class="file">│   ├── report_stroke_vascular_targets.html</span><span class="desc">  ← v3</span>
+<span class="file">│   └── report_stroke_vascular_targets.md</span>
+<span class="dir">├── datasets_overview.html</span><span class="desc">  ← this file</span>
+└── execution_trace.ipynb<span class="desc">  ← full computational notebook</span>
+  </div>
+</div>
+
+</div>
+<div class="ftr">Stroke Brain Vascular Surface Target Project &nbsp;|&nbsp; Biomni 2026-04-09 &nbsp;|&nbsp; 5 analyzed · 17 queued · 9 Class A–C targets · 78 curated genes</div>
+</body></html>
+
