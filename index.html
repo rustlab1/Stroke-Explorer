@@ -248,8 +248,24 @@
 
     /* Gene search */
     .gene-search-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
-    .gene-search-row input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; }
-    .gene-search-row input:focus { outline: none; border-color: var(--blue); }
+    .gene-autocomplete { position: relative; flex: 1; }
+    .gene-autocomplete input { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; box-sizing: border-box; }
+    .gene-autocomplete input:focus { outline: none; border-color: var(--blue); }
+    .gene-suggestions {
+      position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+      background: #fff; border: 1px solid var(--border); border-radius: 6px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      max-height: 260px; overflow-y: auto; z-index: 60;
+    }
+    .gene-suggestions .item {
+      padding: 6px 10px; font-size: 0.85rem; cursor: pointer;
+      border-bottom: 1px solid #f2f2f2;
+    }
+    .gene-suggestions .item:last-child { border-bottom: none; }
+    .gene-suggestions .item:hover,
+    .gene-suggestions .item.active { background: #eef4ff; }
+    .gene-suggestions .item b { color: var(--blue); }
+    .gene-suggestions .empty { padding: 8px 10px; color: #888; font-size: 0.82rem; }
     .gene-pathway-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
 
     /* ===== RESPONSIVE ===== */
@@ -301,7 +317,7 @@
   <aside id="sidebar">
     <div>
       <div class="sidebar-title">Stroke Explorer</div>
-      <div class="sidebar-subtitle">9 datasets · 251 genes · Mouse MCAO</div>
+      <div class="sidebar-subtitle">9 datasets · <span id="sb-gene-count">~29k</span> genes · Mouse MCAO</div>
     </div>
 
     <!-- OVERVIEW: filter by time bin -->
@@ -542,9 +558,9 @@
     <div class="sidebar-section">
       <label>About</label>
       <p class="about-text">
-        Meta-analysis of 9 mouse MCAO scRNA-seq datasets (251 curated genes across 12 cell types).
-        Module scores are mean log-normalized expression of the genes in each panel; pathway modules
-        are fully editable on the Cell Death tab.
+        Meta-analysis of 9 mouse MCAO scRNA-seq datasets — full transcriptome
+        (~29 k gene symbols) across 12 cell types. Module scores are mean log-normalized
+        expression of the genes in each panel; pathway modules are fully editable on the Cell Death tab.
       </p>
     </div>
   </aside>
@@ -566,7 +582,7 @@
         <div class="hero-stats">
           <div class="hero-stat"><span class="hero-num" id="hs-ds">9</span> datasets</div>
           <div class="hero-stat"><span class="hero-num" id="hs-cells">—</span> cells</div>
-          <div class="hero-stat"><span class="hero-num" id="hs-genes">251</span> curated genes</div>
+          <div class="hero-stat"><span class="hero-num" id="hs-genes">~29k</span> genes</div>
           <div class="hero-stat"><span class="hero-num" id="hs-paths">5</span> death pathways</div>
         </div>
       </div>
@@ -595,8 +611,8 @@
           Each Δ-score is the mean (stroke − control) log-norm expression of the listed genes per
           (dataset × timepoint × cell type). Click × to remove a gene, type a new gene symbol and
           press Enter to add, or use Reset to restore the default panel. Panels persist between
-          visits via localStorage. Missing genes (not in the 251-gene meta-analysis set) are
-          flagged in red and excluded.
+          visits via localStorage. Genes missing from a given dataset's matrix (low-expression
+          dropouts) are flagged in red and excluded from that dataset's score.
         </div>
         <div id="module-editor-rows"></div>
         <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
@@ -695,8 +711,10 @@
       <div class="page-sub">Search any gene symbol. Expression is pre-computed for ~250 curated cell-death / glial effectors across all datasets × cell types × timepoints; other symbols return external look-ups (NCBI / Ensembl / GTEx).</div>
       <div class="chart-panel">
         <div class="gene-search-row">
-          <input type="text" id="ge-gene-input" list="gene-datalist" placeholder="Search gene… (e.g. Casp3)" value="Casp3" autocomplete="off">
-          <datalist id="gene-datalist"></datalist>
+          <div class="gene-autocomplete">
+            <input type="text" id="ge-gene-input" placeholder="Search gene… (e.g. Casp3) — type ≥2 letters" value="Casp3" autocomplete="off" spellcheck="false">
+            <div id="gene-suggestions" class="gene-suggestions" hidden></div>
+          </div>
           <span id="ge-pathway-badge" class="gene-pathway-badge pathway-apoptosis">Apoptosis</span>
         </div>
         <div class="chart-subtitle" id="ge-subtitle">Showing expression of <strong>Casp3</strong> across cell types and conditions</div>
@@ -951,9 +969,9 @@ const DEFAULT_MODULES = {
   Ferroptosis:['Gpx4','Acsl4','Slc7a11','Tfrc','Ftl1','Fth1','Ncoa4','Hmox1'],
   Necroptosis:['Mlkl','Ripk3','Ripk1','Fadd','Tnfrsf10b'],
   Necrosis:   ['Hmgb1','Hmgb2','Il1b','Il1a','Tnf','Gsdmd'],
-  // True Parthanatos markers (PARP1, AIFM1) are absent from the 251-gene set,
-  // so we fall back to the closest available proxies and flag this in the UI.
-  Parthanatos:['Aifm2','Aifm3','Nox1','Nox4','Cycs'],
+  // Parp1 + Aifm1 are the canonical Parthanatos markers; Aifm2/Nox1/Nox4 are
+  // commonly co-listed effectors downstream of PARP1/AIF translocation.
+  Parthanatos:['Parp1','Aifm1','Aifm2','Nox1','Nox4','Cycs'],
 };
 /* Antioxidant response module (astrocyte tab) -------------- */
 const ANTIOX_GENES = ['Gclc','Gclm','Gpx1','Gpx3','Gpx4','Hmox1','Sod1','Txnrd1','Gsr','Gss'];
@@ -1248,6 +1266,11 @@ function renderOverview() {
   const el = (id) => document.getElementById(id);
   if (el('hs-ds'))    el('hs-ds').textContent    = DATA.datasets.length;
   if (el('hs-cells')) el('hs-cells').textContent = (totalCells / 1000).toFixed(0) + 'k';
+  // Populate actual gene count from the union of all per-dataset full-transcriptome matrices
+  const nGenes = IDX.knownGenes.size;
+  const geneLabel = nGenes >= 1000 ? (nGenes / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(nGenes);
+  if (el('hs-genes'))       el('hs-genes').textContent       = geneLabel;
+  if (el('sb-gene-count'))  el('sb-gene-count').textContent  = geneLabel;
 
   const grid = document.getElementById('cards-grid');
   const active = new Set([...document.querySelectorAll('.ov-tb:checked')].map(cb => cb.value));
@@ -1539,7 +1562,7 @@ function renderCellDeathHeatmap() {
     noteHtml += `<strong>Missing genes:</strong> ` + misses.map(x => `<em>${x.pw}</em> — ${x.bad.join(', ')}`).join(' · ') + '.<br>';
   }
   if (pathways.includes('Parthanatos')) {
-    noteHtml += `<span style="color:${C.muted}">Note: canonical Parthanatos markers (PARP1, AIFM1) are not in the 251-gene meta-analysis set — Aifm2/Aifm3/Nox1/Nox4/Cycs are used as closest available proxies.</span>`;
+    noteHtml += `<span style="color:${C.muted}">Parthanatos module uses canonical markers Parp1 and Aifm1 plus downstream effectors (Aifm2, Nox1, Nox4, Cycs).</span>`;
   }
   note.innerHTML = noteHtml;
 }
@@ -2149,12 +2172,121 @@ function renderMicrogliaTimeline() {
    Heatmap: cell types (rows) × dataset·timepoint (chronological cols).
    Values = Δ expr vs sham, or absolute mean expression.
    ------------------------------------------------------------ */
+// Cached sorted list + lower-case mirror, populated once per session.
+let GENE_LIST = [];
+let GENE_LIST_LOWER = [];
+
 function initGeneExplorer() {
-  // Union of genes present in any per-dataset full-transcriptome matrix (~25 k)
-  const genes = [...IDX.knownGenes].sort();
-  const dl = document.getElementById('gene-datalist');
-  dl.innerHTML = genes.map(g => `<option value="${g}">`).join('');
-  document.getElementById('ge-gene-input').addEventListener('input', debounce(renderGene, 250));
+  // Union of genes present in any per-dataset full-transcriptome matrix (~25-29k).
+  // Pre-sort and pre-lowercase once — we re-use these on every keystroke.
+  GENE_LIST       = [...IDX.knownGenes].sort();
+  GENE_LIST_LOWER = GENE_LIST.map(g => g.toLowerCase());
+
+  const input = document.getElementById('ge-gene-input');
+  const box   = document.getElementById('gene-suggestions');
+  let activeIdx = -1;
+
+  // ---- helpers ------------------------------------------------------
+  function hideBox() {
+    box.hidden = true;
+    box.innerHTML = '';
+    activeIdx = -1;
+  }
+
+  // Show top matches: prefix matches first, then substring matches. Cap at 40.
+  function showSuggestions() {
+    const q = input.value.trim();
+    if (q.length < 2) { hideBox(); return; }
+    const ql = q.toLowerCase();
+    const prefix   = [];
+    const contains = [];
+    for (let i = 0; i < GENE_LIST_LOWER.length; i++) {
+      const gl = GENE_LIST_LOWER[i];
+      if (gl.startsWith(ql)) {
+        prefix.push(GENE_LIST[i]);
+        if (prefix.length >= 40) break;
+      } else if (contains.length < 40 && gl.includes(ql)) {
+        contains.push(GENE_LIST[i]);
+      }
+    }
+    const matches = prefix.length >= 40
+      ? prefix
+      : prefix.concat(contains.slice(0, 40 - prefix.length));
+
+    if (!matches.length) {
+      box.innerHTML = `<div class="empty">No matches in ${IDX.knownGenes.size.toLocaleString()} mouse symbols</div>`;
+      box.hidden = false;
+      return;
+    }
+    box.innerHTML = matches.map(g => {
+      const idx = g.toLowerCase().indexOf(ql);
+      const pre  = g.slice(0, idx);
+      const mid  = g.slice(idx, idx + ql.length);
+      const post = g.slice(idx + ql.length);
+      return `<div class="item" data-gene="${g}">${pre}<b>${mid}</b>${post}</div>`;
+    }).join('');
+    box.hidden = false;
+    activeIdx = -1;
+  }
+
+  // Commit a chosen gene: fill the input, hide dropdown, redraw heatmap.
+  function selectGene(g) {
+    input.value = g;
+    hideBox();
+    renderGene();
+  }
+
+  // ---- input handlers ----------------------------------------------
+  // Debounce only the suggestion list — never the heatmap render.
+  // The heatmap is only triggered on an explicit selection (click / Enter).
+  input.addEventListener('input', debounce(showSuggestions, 100));
+  input.addEventListener('focus', showSuggestions);
+
+  input.addEventListener('keydown', (e) => {
+    const items = box.querySelectorAll('.item');
+
+    if (e.key === 'ArrowDown' && !box.hidden && items.length) {
+      e.preventDefault();
+      activeIdx = (activeIdx + 1) % items.length;
+      items.forEach(n => n.classList.remove('active'));
+      items[activeIdx].classList.add('active');
+      items[activeIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp' && !box.hidden && items.length) {
+      e.preventDefault();
+      activeIdx = activeIdx <= 0 ? items.length - 1 : activeIdx - 1;
+      items.forEach(n => n.classList.remove('active'));
+      items[activeIdx].classList.add('active');
+      items[activeIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIdx >= 0 && items[activeIdx]) {
+        selectGene(items[activeIdx].dataset.gene);
+      } else if (items.length === 1) {
+        selectGene(items[0].dataset.gene);
+      } else {
+        // No active suggestion — try whatever the user typed exactly.
+        renderGene();
+        hideBox();
+      }
+    } else if (e.key === 'Escape') {
+      hideBox();
+    }
+  });
+
+  // Click selection (mousedown so it fires before input blur).
+  box.addEventListener('mousedown', (e) => {
+    const item = e.target.closest('.item');
+    if (!item) return;
+    e.preventDefault();
+    selectGene(item.dataset.gene);
+  });
+
+  // Click outside the search row → close dropdown.
+  document.addEventListener('click', (e) => {
+    if (e.target !== input && !box.contains(e.target)) hideBox();
+  });
+
+  // Cell type / mode toggles re-render with the currently-committed gene.
   document.getElementById('ge-celltype').addEventListener('change', renderGene);
   document.querySelectorAll('input[name="ge-mode"]').forEach(r =>
     r.addEventListener('change', renderGene));
@@ -2192,7 +2324,9 @@ function renderGene() {
   badge.className = `gene-pathway-badge pathway-${firstPw || 'other'}`;
 
   if (!IDX.knownGenes.has(gene)) {
-    // Still possible for typos / non-mouse symbols. Keep the external-lookup fallback.
+    // Typo or non-mouse symbol. Show a warning in the subtitle slot but
+    // do NOT resize the chart — purging keeps the panel height stable
+    // (the chart-gene div has min-height:420px) and avoids visible flicker.
     const ncbi  = `https://www.ncbi.nlm.nih.gov/gene/?term=${encodeURIComponent(gene)}`;
     const gtex  = `https://www.gtexportal.org/home/gene/${encodeURIComponent(gene)}`;
     const ensbl = `https://www.ensembl.org/Multi/Search/Results?q=${encodeURIComponent(gene)}`;
@@ -2200,14 +2334,14 @@ function renderGene() {
       `<div style="color:#B45309;background:#FFF7ED;border:1px solid #FED7AA;padding:10px 12px;border-radius:6px;line-height:1.55">
          <b>${gene}</b> is not present in any of the 9 per-dataset matrices
          (union ~${IDX.knownGenes.size.toLocaleString()} mouse gene symbols).
-         Check spelling or verify it is an annotated mouse gene.<br>
+         Check spelling or pick a suggestion from the dropdown.<br>
          <span style="font-size:0.82rem">External lookup:
            <a href="${ncbi}"  target="_blank" rel="noopener">NCBI Gene</a> ·
            <a href="${ensbl}" target="_blank" rel="noopener">Ensembl</a> ·
            <a href="${gtex}"  target="_blank" rel="noopener">GTEx</a>
          </span>
        </div>`;
-    Plotly.react('chart-gene', [], { height: 220, xaxis:{visible:false}, yaxis:{visible:false} }, { responsive: true, displayModeBar: false });
+    try { Plotly.purge('chart-gene'); } catch (e) { /* ignore */ }
     return;
   }
 
@@ -2277,7 +2411,13 @@ function renderGene() {
     paper_bgcolor: 'white', plot_bgcolor: 'white',
     height: Math.max(380, cellTypes.length * 34 + 200),
   };
-  Plotly.react('chart-gene', [trace], layout, { responsive: true, displayModeBar: false });
+  try {
+    Plotly.react('chart-gene', [trace], layout, { responsive: true, displayModeBar: false });
+  } catch (err) {
+    console.error('renderGene failed:', err);
+    document.getElementById('ge-subtitle').innerHTML =
+      `<span style="color:#B45309">Rendering failed for <b>${gene}</b>. See browser console.</span>`;
+  }
 }
 
 /* ============================================================
