@@ -533,7 +533,20 @@
         <option value="Necrosis">Necrosis</option>
         <option value="Parthanatos">Parthanatos</option>
         <option value="Antioxidant">Antioxidant (Nrf2)</option>
+        <option value="__custom__">Custom gene set…</option>
       </select>
+      <!-- Custom gene-set entry. Hidden unless "Custom" is chosen. -->
+      <div id="um-custom-wrap" style="display:none;margin-top:6px">
+        <label>Custom genes (comma or space separated)</label>
+        <textarea id="um-custom-genes" rows="3"
+          style="width:100%;font-family:inherit;font-size:0.8rem;padding:6px 8px;border:1px solid var(--border);border-radius:4px;box-sizing:border-box;resize:vertical"
+          placeholder="e.g. Bdnf, Vegfa, Pdgfrb, Aqp4"></textarea>
+        <button type="button" id="um-custom-apply"
+          style="margin-top:6px;padding:5px 10px;font-size:0.78rem;border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:4px;cursor:pointer;width:100%">
+          Apply gene set
+        </button>
+        <div id="um-custom-status" style="margin-top:4px;font-size:0.72rem;color:var(--muted)"></div>
+      </div>
       <label style="margin-top:6px">Dataset</label>
       <select id="um-dataset"></select>
       <label style="margin-top:6px">Timepoint</label>
@@ -728,6 +741,7 @@
       <div class="page-title">UMAP (schematic)</div>
       <div class="page-sub">
         A schematic 2-D layout of cell types — point size ~ # cells, colour = Δ-score of the selected pathway module (stroke − control).
+        Pick one of the 5 cell-death modules + Antioxidant, or paste your own gene set in the sidebar.
         This is an interpretive view built from module scores, not a true cell-resolution UMAP embedding.
       </div>
       <div class="chart-panel">
@@ -747,8 +761,8 @@
         <div id="chart-lr-heatmap" style="width:100%;min-height:440px"></div>
         <div id="chart-lr-top" style="width:100%;min-height:460px;margin-top:14px"></div>
         <div class="chart-note">
-          Edge weight = mean( ligand · receptor ) across member datasets. Δ is stroke − control.
-          Values are schematic; confirm in the source datasets before quoting. Source annotations: CellChat v2, CellPhoneDB v5.
+          Edge weight = √(ligand · receptor) averaged across every dataset that contains both source and target cell types.
+          Δ = stroke − control, computed live from the 9 per-dataset full-transcriptome matrices for each curated L–R pair (CellChat v2 / CellPhoneDB v5).
         </div>
       </div>
     </div>
@@ -765,8 +779,8 @@
         <div id="chart-dg-dot" style="width:100%;min-height:520px"></div>
         <div id="dg-table" style="margin-top:14px;font-size:0.82rem"></div>
         <div class="chart-note">
-          Druggability combines approved-drug availability, ligand-binding pocket quality, and published preclinical traction.
-          Status tags use FDA/EMA approvals where applicable.
+          Δ log2FC is computed live from the 9 per-dataset full-transcriptome matrices (target cell-type only).
+          Druggability, status, drugs and rationale stay curated (DGIdb, ChEMBL, OpenTargets + stroke trial literature).
         </div>
       </div>
     </div>
@@ -1149,6 +1163,113 @@ function buildIndexes() {
     IDX.colIdx[ds]  = cmap;
     IDX.colMeta[ds] = obj.columns;
     IDX.byDataset.set(ds, { conds: condSet, cells: ctSet, ctrlConds: ctrlSet });
+  }
+
+  // Once the full matrices + curated tables are loaded, refresh the
+  // ligand-receptor and drug-target deltas using the real expression data.
+  recomputeLigRecFromFull();
+  recomputeDrugDeltasFromFull();
+}
+
+/* ============================================================
+   Recompute Cell-Cell Talk pair strengths from the full
+   transcriptome (replaces the curated δ values).
+
+   Per pair p (ligand L in source S → receptor R in target T,
+   restricted to time bin p.bin):
+     • For each dataset that has BOTH S and T as cell types:
+         - stroke conditions matching p.bin: strength = sqrt(L_S · R_T)
+         - control conditions:               strength = sqrt(L_S · R_T)
+     • Average strengths across datasets that contributed.
+     • abs_stroke / abs_ctrl = these means.   delta = stroke − ctrl.
+   ------------------------------------------------------------ */
+function recomputeLigRecFromFull() {
+  if (!DATA.ligRec || !Array.isArray(DATA.ligRec.pairs)) return;
+  const cols = expandedStrokeCols(); // {dataset, condition, days, bin}
+
+  for (const p of DATA.ligRec.pairs) {
+    // Gather per-dataset stroke / control strengths.
+    const dsContrib = [];
+    for (const ds of FULL_DATASETS) {
+      const info = IDX.byDataset.get(ds);
+      if (!info || !info.cells.has(p.source) || !info.cells.has(p.target)) continue;
+
+      // Stroke conditions in this dataset matching the pair's bin.
+      const strokeCondsBin = cols
+        .filter(c => c.dataset === ds && c.bin === p.bin)
+        .map(c => c.condition);
+      if (!strokeCondsBin.length) continue;
+
+      // Pair strength = sqrt(L_in_source · R_in_target). NaNs skip.
+      const strengthAt = (cond) => {
+        const L = exprMean(ds, p.source, cond, p.ligand);
+        const R = exprMean(ds, p.target, cond, p.receptor);
+        if (L == null || R == null) return null;
+        return Math.sqrt(Math.max(0, L) * Math.max(0, R));
+      };
+
+      const strokeVals = strokeCondsBin.map(strengthAt).filter(v => v != null);
+      const ctrlVals   = ctrlConds(ds).map(strengthAt).filter(v => v != null);
+      if (!strokeVals.length || !ctrlVals.length) continue;
+
+      const sMean = strokeVals.reduce((a, b) => a + b, 0) / strokeVals.length;
+      const cMean = ctrlVals.reduce((a, b) => a + b, 0) / ctrlVals.length;
+      dsContrib.push({ ds, sMean, cMean });
+    }
+
+    if (!dsContrib.length) {
+      // Leave the curated value but flag so the chart-note can mention it.
+      p.recomputed = false;
+      continue;
+    }
+    const sAvg = dsContrib.reduce((a, b) => a + b.sMean, 0) / dsContrib.length;
+    const cAvg = dsContrib.reduce((a, b) => a + b.cMean, 0) / dsContrib.length;
+    p.abs_stroke = +sAvg.toFixed(3);
+    p.abs_ctrl   = +cAvg.toFixed(3);
+    p.delta      = +(sAvg - cAvg).toFixed(3);
+    p.datasets   = dsContrib.map(x => x.ds);
+    p.recomputed = true;
+  }
+}
+
+/* ============================================================
+   Recompute Drug-Target Δ from the full transcriptome.
+
+   For each curated target {gene, cell_type}:
+     • Average exprDelta(ds, cell_type, strokeCond, gene) across every
+       dataset/timepoint where the cell type is present.
+     • t.delta = mean Δ; t.n_datasets = unique datasets that contributed.
+   Other fields (druggability, status, drugs, rationale, bin, pathway)
+   stay curated.
+   ------------------------------------------------------------ */
+function recomputeDrugDeltasFromFull() {
+  if (!DATA.drugs || !Array.isArray(DATA.drugs.targets)) return;
+  const cols = expandedStrokeCols();
+
+  for (const t of DATA.drugs.targets) {
+    const dsHit = new Set();
+    const deltas = [];
+    for (const ds of FULL_DATASETS) {
+      const info = IDX.byDataset.get(ds);
+      if (!info || !info.cells.has(t.cell_type)) continue;
+      // Optional bin restriction — if the target has a bin tag, focus there;
+      // otherwise pool across all stroke timepoints.
+      const stroke = cols.filter(c => c.dataset === ds && (!t.bin || c.bin === t.bin));
+      let any = false;
+      for (const c of stroke) {
+        const d = exprDelta(ds, t.cell_type, c.condition, t.gene);
+        if (d != null && !Number.isNaN(d)) { deltas.push(d); any = true; }
+      }
+      if (any) dsHit.add(ds);
+    }
+    if (deltas.length) {
+      const mean = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+      t.delta = +mean.toFixed(3);
+      t.n_datasets = dsHit.size;
+      t.recomputed = true;
+    } else {
+      t.recomputed = false; // keep curated value
+    }
   }
 }
 
@@ -2467,6 +2588,9 @@ function populateUmapTimepoints() {
   else umTp.value = '__all__';
 }
 
+// Holds the most recent user-supplied custom gene list (validated against IDX.knownGenes).
+let UM_CUSTOM_GENES = [];
+
 function renderUmap() {
   const umDs = document.getElementById('um-dataset');
   if (!umDs.options.length) {
@@ -2476,7 +2600,13 @@ function renderUmap() {
   const pw = document.getElementById('um-pathway').value;
   const dataset = umDs.value;
   const tp = document.getElementById('um-timepoint').value;
-  const genes = pw === 'Antioxidant' ? ANTIOX_GENES : MODULES[pw];
+  // Resolve gene set: 5 cell-death modules + Antioxidant + a user-supplied list.
+  let genes;
+  if (pw === '__custom__')        genes = UM_CUSTOM_GENES;
+  else if (pw === 'Antioxidant')  genes = ANTIOX_GENES;
+  else                            genes = MODULES[pw];
+  // Empty custom list → just keep the schematic visible with neutral colours.
+  if (!genes || !genes.length) genes = [];
 
   const dsMeta = DATA.datasets.find(d => d.id === dataset);
   const cts = (dsMeta?.cell_types || []).filter(ct => UMAP_CENTERS[ct]);
@@ -2837,12 +2967,35 @@ function wireEvents() {
   document.querySelectorAll('.mg-sig').forEach(cb => cb.addEventListener('change', () => { renderMicrogliaBar(); renderMicrogliaTimeline(); }));
 
   // UMAP
-  document.getElementById('um-pathway').addEventListener('change', renderUmap);
+  document.getElementById('um-pathway').addEventListener('change', () => {
+    const isCustom = document.getElementById('um-pathway').value === '__custom__';
+    document.getElementById('um-custom-wrap').style.display = isCustom ? 'block' : 'none';
+    renderUmap();
+  });
   document.getElementById('um-dataset').addEventListener('change', () => {
     populateUmapTimepoints();
     renderUmap();
   });
   document.getElementById('um-timepoint').addEventListener('change', renderUmap);
+  // Apply-button for custom gene set: validates against IDX.knownGenes,
+  // shows how many were found, and re-renders.
+  document.getElementById('um-custom-apply').addEventListener('click', () => {
+    const txt = document.getElementById('um-custom-genes').value || '';
+    const tokens = txt.split(/[,\s;]+/).map(s => s.trim()).filter(Boolean);
+    const known = tokens.filter(g => IDX.knownGenes.has(g));
+    const unknown = tokens.filter(g => !IDX.knownGenes.has(g));
+    UM_CUSTOM_GENES = known;
+    const status = document.getElementById('um-custom-status');
+    if (!tokens.length) {
+      status.innerHTML = '<span style="color:#B45309">Enter at least one gene symbol</span>';
+    } else if (!known.length) {
+      status.innerHTML = `<span style="color:#B45309">None of ${tokens.length} symbols matched (case-sensitive). Try Bdnf instead of BDNF.</span>`;
+    } else {
+      status.innerHTML = `<span style="color:#15803D">${known.length} matched</span>` +
+        (unknown.length ? ` <span style="color:#B45309">· ${unknown.length} unknown: ${unknown.slice(0,4).join(', ')}${unknown.length>4?'…':''}</span>` : '');
+    }
+    renderUmap();
+  });
 
   // Ligand-Receptor (Cell-Cell Talk)
   document.getElementById('lr-bin').addEventListener('change', renderLigRec);
